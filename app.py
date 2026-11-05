@@ -3,6 +3,7 @@ import copy
 import json
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 from engine import EXAMPLE, ModelError, build, dumps, export_model, loads, mesh
 from viewer import html
@@ -122,7 +123,7 @@ with display:
         with st.spinner('Preparando o modelo geométrico…'):
             result = compile_project(dumps(st.session_state.features))
         st.subheader('Modelo sólido 3D')
-        st.iframe(html(result['mesh']), height=530)
+        components.html(html(result['mesh']), height=530, scrolling=False)
         a, b = st.columns(2)
         a.metric('Volume', f"{result['volume']:,.2f} mm³")
         b.metric('Dimensões totais X × Y × Z', ' × '.join(f'{v:g}' for v in result['size'])+' mm')
@@ -137,3 +138,4 @@ with display:
         st.error(str(exc))
 
 st.caption('Escopo inicial: um único sólido, retângulos e círculos em planos XY. Sem desenho livre, solver de restrições, montagem ou leitura de arquivos SLDPRT.')
+
