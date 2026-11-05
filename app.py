@@ -10,8 +10,9 @@ import streamlit.components.v1 as components
 
 from engine import EXAMPLE, ModelError, build, dumps, export_model, loads, mesh, validate
 from viewer import html
+from constraints import solve_points, ConstraintError
 
-st.set_page_config(page_title='CAD Vision · Oficina', page_icon='◈', layout='wide')
+st.set_page_config(page_title='3DE · Modelagem paramétrica', page_icon='◈', layout='wide')
 st.markdown('''<style>
 :root{color-scheme:dark}.stApp{background:#0c151d}header[data-testid="stHeader"]{background:#0c151dee}
 .block-container{padding-top:3.6rem;padding-bottom:1rem;max-width:1800px}
@@ -21,8 +22,8 @@ h1{font-size:1.7rem!important;letter-spacing:-.04em}h3{font-size:1.03rem!importa
 .banner{border:1px solid #34505a;border-radius:12px;padding:12px 18px;background:linear-gradient(110deg,#18332f,#14232e);margin-bottom:18px}
 .banner b{color:#a6edda}.banner span{color:#acc0c8;font-size:13px}.stButton button{border-radius:8px}
 </style>''', unsafe_allow_html=True)
-st.markdown('<div class="brand">CAD VISION / OFICINA PARAMÉTRICA</div>', unsafe_allow_html=True)
-st.title('Da ideia à peça, uma operação por vez')
+st.markdown('<div class="brand">3DE / PROJETO MECÂNICO</div>', unsafe_allow_html=True)
+st.title('3DE · Oficina de criação')
 st.caption('Esboce, defina as cotas e reconstrua um sólido. Projeto em milímetros.')
 
 sketch = components.declare_component('cad_vision_sketch', path=str(Path(__file__).parent/'sketch'))
@@ -74,6 +75,14 @@ with st.sidebar:
             commit([], -1);st.rerun()
         if st.button('Abrir peça de exemplo'):
             commit(copy.deepcopy(EXAMPLE), -1);st.rerun()
+        if st.button('Exemplo com relações'):
+            base=copy.deepcopy(EXAMPLE[0])
+            base.update(profile='polygon', points=[[-40,-25],[40,-25],[40,25],[-40,25]],
+                        constraints=[dict(type='fixed',a=0,x=-40,y=-25),
+                                     dict(type='horizontal',a=0),dict(type='vertical',a=1),
+                                     dict(type='horizontal',a=2),dict(type='vertical',a=3),
+                                     dict(type='length',a=0,value=80),dict(type='length',a=1,value=50)])
+            commit([base],0);st.rerun()
         upload=st.file_uploader('Abrir projeto JSON',type=['json'])
         if st.button('Importar projeto',disabled=upload is None):
             try:
@@ -129,10 +138,22 @@ with inspector:
     elif profile=='circle':
         diameter=st.number_input('Diâmetro (mm)',.1,10000.,float(diameter),key=f'diameter_{key}')
     else:
-        st.caption('Coordenadas dos vértices relativas ao centro U/V. O último ponto se liga ao primeiro.')
+        st.caption('Vértices relativos ao centro U/V. As relações têm prioridade sobre as coordenadas iniciais. O último ponto se liga ao primeiro.')
         table=st.data_editor(pd.DataFrame(points,columns=['U','V']),num_rows='dynamic',hide_index=True,key=f'points_{key}',
-                             column_config={c:st.column_config.NumberColumn(c,required=True,min_value=-10000,max_value=10000) for c in ['U','V']})
+                             column_config={c:st.column_config.NumberColumn(c,required=True,min_value=-10000,max_value=10000,format='%.3f') for c in ['U','V']})
         points=table[['U','V']].values.tolist()
+    relations=copy.deepcopy(d.get('constraints',[])) if profile=='polygon' else []
+    if relations:
+        with st.expander(f'Relações do esboço · {len(relations)}',expanded=True):
+            relation_names=dict(fixed='Fixo',horizontal='Horizontal',vertical='Vertical',length='Comprimento',
+                                parallel='Paralelos',perpendicular='Perpendiculares',equal='Iguais',dx='Distância U',dy='Distância V')
+            for ri,c in enumerate(relations):
+                label=f"{ri+1}. {relation_names[c['type']]} · {'vértice' if c['type']=='fixed' else 'segmento'} {c['a']+1}"
+                if 'value' in c:
+                    c['value']=st.number_input(label, min_value=.1 if c['type']=='length' else -10000.,
+                        max_value=10000.,value=float(c['value']),key=f'relation_{key}_{ri}')
+                else:st.caption(label)
+            st.caption('Selecione elementos na aba Esboço 2D para adicionar ou remover relações.')
     extents={'Profundidade definida':'blind','Simétrica ao esboço':'symmetric'}
     if operation=='Remover':extents['Atravessar tudo']='through'
     extent_values=list(extents.values())
@@ -143,7 +164,14 @@ with inspector:
     candidate_feature=dict(name=name.strip(),operation='add' if operation=='Adicionar' else 'cut',profile=profile,
         plane=plane,placement=placements[placement_label],x=x,y=y,z=z,length=length,width=width,diameter=diameter,
         depth=depth,direction=1 if direction_label=='Normal +' else -1,extent=extent,enabled=enabled)
-    if profile=='polygon':candidate_feature['points']=points
+    if profile=='polygon':
+        candidate_feature.update(points=points,constraints=relations)
+        if relations:
+            try:
+                solved,_,report=solve_points(points,relations)
+                candidate_feature['points']=solved
+                st.caption('Esboço totalmente definido.' if report['freedom']==0 else f"Esboço com {report['freedom']} graus de liberdade.")
+            except ConstraintError as exc:st.error(str(exc))
     s.draft=copy.deepcopy(candidate_feature)
     if st.button('Aplicar operação',type='primary',width='stretch'):
         candidate=copy.deepcopy(features)
@@ -195,12 +223,12 @@ with workspace:
         if isinstance(value,dict) and value.get('nonce')!=s.sketch_nonce:
             s.sketch_nonce=value.get('nonce')
             if value.get('profile')==profile:
-                for field in ('x','y','length','width','diameter','points'):
+                for field in ('x','y','length','width','diameter','points','constraints'):
                     if field in value:s.draft[field]=value[field]
                 s.revision+=1
                 st.rerun()
-        st.caption('Retângulo: arraste entre dois cantos. Círculo: arraste do centro à borda. Contorno: clique nos vértices e feche no primeiro ponto.')
+        st.caption('Contorno: desenhe linhas e feche no primeiro vértice. Selecione segmentos ou vértices para cotar e relacionar; Ctrl seleciona dois. Verde indica totalmente definido. O botão Usar este esboço preserva as relações no projeto.')
     with st.expander('Como trabalhar'):
         st.write('1. Escolha uma operação no histórico ou crie uma nova. 2. Defina o plano e desenhe ou digite as cotas. 3. Escolha adicionar/remover material e a profundidade. 4. Aplique a operação. Um erro mantém a última peça válida. Desfazer/Refazer atua nas alterações aplicadas, durante esta sessão.')
-        st.caption('Escopo: um sólido conectado, perfis fechados, planos de referência e reconstrução paramétrica. Ainda sem solver geral de restrições, seleção de faces, montagem ou importação SLDPRT. Salve o JSON antes de sair; STEP exporta a geometria e STL a malha em mm.')
+        st.caption('Versão em desenvolvimento: um sólido conectado, perfis fechados e relações entre linhas. Ainda sem arcos livres, tangência, seleção de faces, montagens, simulação ou importação SLDPRT. O 3DE não possui todas as funcionalidades do SolidWorks. Salve o JSON antes de sair; STEP exporta a geometria e STL a malha em mm.')
 

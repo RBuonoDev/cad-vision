@@ -1,4 +1,4 @@
-# CAD Vision · Oficina paramétrica
+# 3DE · Oficina paramétrica
 
 Aplicativo acadêmico independente em Python, CadQuery e Three.js. A inspeção estática com REA identificou interfaces de esboços e operações do SolidWorks; essas informações orientaram a organização funcional. Esta implementação não incorpora código nem recursos gráficos do SolidWorks.
 
@@ -43,3 +43,24 @@ Para Streamlit Community Cloud, mantenha `app.py`, `engine.py`, `viewer.py`, `sk
 Sem solver geral de restrições, arcos livres, seleção de faces, planos inclinados, montagens, simulação, filetes ou leitura/gravação SLDPRT. O contorno é um polígono fechado simples com até 100 vértices. Até 50 operações por projeto. STEP exporta a geometria, sem o histórico paramétrico; STL contém a malha, com coordenadas em mm.
 
 O visual tem identidade própria, com painel de cotas, histórico lateral e oficina em verde mineral e grafite. Não foram usados ícones, logotipos nem elementos gráficos extraídos do programa de referência.
+
+## 3DE — editor com relações
+
+O projeto agora se chama **3DE**. Na aba Esboço 2D, escolha Contorno por linhas, desenhe e feche o contorno. Clique em um segmento para selecionar; Ctrl permite escolher dois. Clique nos vértices para selecioná-los; arraste para mover respeitando as relações.
+
+- Horizontal/Vertical: mantém a direção do segmento.
+- Cotar: define o comprimento do segmento selecionado; o valor aparece na lista e pode ser alterado.
+- Fixar vértice: ancora sua posição. Remova essa relação para voltar a movê-lo livremente.
+- Paralelos, Perpendiculares e Iguais: exigem dois segmentos selecionados.
+- ΔU/ΔV: distância assinada entre dois vértices, na ordem em que foram selecionados. São cotas nos eixos do esboço.
+- Inferir horizontal/vertical: acrescenta relações ao desenhar segmentos alinhados. Vértices consecutivos compartilham o mesmo ponto, mantendo a ligação do contorno.
+- Azul: esboço com liberdade restante. Verde e “Totalmente definido”: o solucionador encontrou zero graus de liberdade locais.
+- Relações conflitantes: o desenho anterior é preservado; revise ou remova relações antes de prosseguir.
+- Desfazer desenho/Refazer desenho: atua dentro do editor antes de enviar o esboço. Desfazer/Refazer do projeto atua nas operações aplicadas.
+
+Use **Arquivo e exemplos → Exemplo com relações** para experimentar uma placa totalmente definida. Altere o comprimento de 80 para 100 mm na lista de relações ou no painel e aplique a operação. O sólido passa de 80.000 para 100.000 mm³, preservando altura, largura e relações.
+
+O projeto JSON agora usa versão 3 e preserva relações; versões 1 e 2 continuam aceitas. Limites do solucionador: 40 vértices, 60 relações, comprimentos mínimos de 0,1 mm. O solucionador numérico tem escopo limitado a linhas e às relações oferecidas; não inclui arcos, tangência nem todas as relações de um CAD comercial. A detecção de definição é local e numérica, não uma prova simbólica de unicidade global.
+
+Consulte **3DE-ESCOPO.md** para a cobertura real e os módulos que ainda não existem. Esta versão não é uma réplica integral do SolidWorks.
+

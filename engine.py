@@ -91,7 +91,15 @@ def validate(features):
         if f['placement'] not in ('absolute', 'max', 'min'):
             raise ModelError('Referência do esboço inválida.')
         if f['profile'] == 'polygon':
-            f['points'] = validate_polygon(item.get('points'))
+            raw_points = item.get('points')
+            relations = item.get('constraints', [])
+            if not isinstance(relations,list):
+                raise ModelError('As relações do esboço devem ser uma lista.')
+            if relations:
+                from constraints import solve_points
+                raw_points, relations, _ = solve_points(raw_points, relations)
+            f['points'] = validate_polygon(raw_points)
+            f['constraints'] = relations
         clean.append(f)
     return clean
 
@@ -187,7 +195,7 @@ def export_model(model, kind):
 
 
 def dumps(features):
-    return json.dumps(dict(format='cad-academico', version=2, unit='mm', features=validate(features)),
+    return json.dumps(dict(format='cad-academico', version=3, unit='mm', features=validate(features)),
                       ensure_ascii=False, indent=2, allow_nan=False)
 
 
@@ -195,6 +203,6 @@ def loads(data):
     if len(data) > 200_000:
         raise ModelError('O projeto deve ter no máximo 200 KB.')
     doc = json.loads(data)
-    if not isinstance(doc, dict) or doc.get('format') != 'cad-academico' or doc.get('version') not in (1,2) or doc.get('unit') != 'mm':
+    if not isinstance(doc, dict) or doc.get('format') != 'cad-academico' or doc.get('version') not in (1,2,3) or doc.get('unit') != 'mm':
         raise ModelError('Arquivo de projeto incompatível.')
     return validate(doc.get('features'))

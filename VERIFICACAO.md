@@ -13,3 +13,11 @@ Verificado em 05/11/2026 com Python 3.12, Streamlit 1.50.0 e CadQuery 2.6.1.
 - Visualizador Three.js carregado e renderizado no navegador.
 
 Esses testes verificam este protótipo e não demonstram equivalência completa com SolidWorks. A verificação da publicação é registrada na resposta de entrega.
+
+## Testes do 3DE com relações
+
+- Solucionadores no navegador e servidor: estado totalmente definido, cota de comprimento, paralelismo, perpendicularidade, igualdade e distância U/V.
+- Conflito entre comprimentos incompatíveis rejeitado; movimento que viola fixação rejeitado no solucionador do navegador.
+- Alteração de comprimento de 80 para 100 mm preservou sete relações e regenerou um sólido de 100.000 mm³.
+- Relações preservadas ao salvar/reabrir o JSON.
+- Testes anteriores de geometria, planos, cortes, exportação, compatibilidade, histórico e recuperação após erro continuam passando.

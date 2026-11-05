@@ -8,7 +8,7 @@ def html(mesh):
 <style>*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#101c26;color:#dae9ed;font:12px system-ui}#view{position:absolute;inset:0}#bar{position:absolute;top:12px;left:12px;right:12px;z-index:2;display:flex;gap:5px;flex-wrap:wrap}button{background:#18303de8;color:#d7e6eb;border:1px solid #375460;border-radius:7px;padding:7px 9px;cursor:pointer}button:hover{border-color:#65d8ba}button[aria-pressed=true]{color:#8eebd0;border-color:#58b89d}#status{position:absolute;bottom:12px;left:14px;right:14px;color:#abc3ce;pointer-events:none;background:#101c26b0;padding:6px}#badge{position:absolute;bottom:48px;right:14px;font-size:10px;letter-spacing:2px;color:#6e999d}</style>
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-<div id="view"></div><div id="bar"><button data-view="iso">Isométrica</button><button data-view="front">Frontal</button><button data-view="top">Superior</button><button data-view="right">Direita</button><button id="fit">Enquadrar</button><button id="edges" aria-pressed="true">Arestas</button><button id="wire" aria-pressed="false">Aramado</button><button id="grid" aria-pressed="true">Grade</button></div><div id="badge">CAD VISION / mm</div><div id="status">Carregando modelo…</div><script>
+<div id="view"></div><div id="bar"><button data-view="iso">Isométrica</button><button data-view="front">Frontal</button><button data-view="top">Superior</button><button data-view="right">Direita</button><button id="fit">Enquadrar</button><button id="edges" aria-pressed="true">Arestas</button><button id="wire" aria-pressed="false">Aramado</button><button id="grid" aria-pressed="true">Grade</button></div><div id="badge">3DE / mm</div><div id="status">Carregando modelo…</div><script>
 const status=document.getElementById('status');const deadline=setTimeout(()=>status.textContent='Não foi possível carregar as bibliotecas 3D. Verifique a conexão e recarregue.',12000);
 window.addEventListener('DOMContentLoaded',()=>{try{
 if(!window.THREE||!THREE.OrbitControls)throw Error('Bibliotecas 3D indisponíveis');const data=__MESH__;
@@ -34,3 +34,4 @@ window.addEventListener('resize',resize);resize();view('iso');let running=true;w
 function draw(){if(!running)return;requestAnimationFrame(draw);controls.update();renderer.render(scene,camera)}draw();clearTimeout(deadline);status.textContent='Arraste: girar · Roda: zoom · Botão direito: mover · Projeção ortográfica';
 }catch(e){clearTimeout(deadline);status.textContent='Não foi possível renderizar: '+e.message}});
 </script></html>'''.replace('__MESH__',data)
+
