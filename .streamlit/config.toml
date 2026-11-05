@@ -4,3 +4,6 @@ primaryColor = "#36b8fa"
 backgroundColor = "#0b1425"
 secondaryBackgroundColor = "#101e30"
 textColor = "#e0ecff"
+
+[server]
+address = "0.0.0.0"
