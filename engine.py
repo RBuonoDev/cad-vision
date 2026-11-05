@@ -69,10 +69,20 @@ def validate(features):
         f = {key: item.get(key) for key in ("name", "operation", "profile", "enabled")}
         if not isinstance(f['name'], str) or not f['name'].strip() or len(f['name']) > 80:
             raise ModelError(f"Operação {index}: informe um nome de até 80 caracteres.")
-        if f['operation'] not in ('add', 'cut') or f['profile'] not in ('rectangle', 'circle', 'polygon'):
+        if f['operation'] not in ('add', 'cut', 'fillet', 'chamfer'):
             raise ModelError(f"Operação {index}: tipo não suportado.")
         if not isinstance(f['enabled'], bool):
             raise ModelError(f"Operação {index}: estado inválido.")
+        if f['operation'] in ('fillet', 'chamfer'):
+            f.pop('profile')
+            f['radius'] = _number(item.get('radius'), f'Operação {index}: raio/distância', positive=True)
+            f['edges'] = item.get('edges', 'all')
+            if f['edges'] not in ('all', 'vertical', 'horizontal_x', 'horizontal_y', 'top', 'bottom'):
+                raise ModelError(f'Operação {index}: seleção de arestas inválida.')
+            clean.append(f)
+            continue
+        if f['profile'] not in ('rectangle', 'circle', 'polygon'):
+            raise ModelError(f"Operação {index}: perfil não suportado.")
         for key in ('x', 'y', 'z', 'length', 'width', 'diameter', 'depth'):
             f[key] = _number(item.get(key), f'Operação {index}: {key}',
                              key in ('length', 'width', 'diameter', 'depth'))
@@ -116,6 +126,30 @@ def build(features):
             history.append(dict(name=f['name'], status='suprimida', volume=None))
             continue
         try:
+            if f['operation'] in ('fillet', 'chamfer'):
+                if model is None:
+                    raise ModelError('Crie uma base antes de modificar as arestas.')
+                selectors = {'vertical': '|Z', 'horizontal_x': '|X', 'horizontal_y': '|Y'}
+                if f['edges'] == 'top':
+                    selected = model.faces('>Z').edges()
+                elif f['edges'] == 'bottom':
+                    selected = model.faces('<Z').edges()
+                else:
+                    selected = model.edges(selectors.get(f['edges']))
+                if not selected.size():
+                    raise ModelError('Nenhuma aresta corresponde à seleção.')
+                previous_volume = model.val().Volume()
+                result = (selected.fillet(f['radius']) if f['operation'] == 'fillet'
+                          else selected.chamfer(f['radius']))
+                if len(result.solids().vals()) != 1 or not result.val().isValid():
+                    raise ModelError('A operação deve manter um único sólido válido e conectado.')
+                volume = result.val().Volume()
+                if volume <= 1e-8 or abs(volume - previous_volume) <= max(1e-8, previous_volume * 1e-10):
+                    raise ModelError('A modificação não produziu um sólido válido. Revise a seleção e o tamanho.')
+                model = result
+                history.append(dict(name=f['name'], status='válida', volume=volume,
+                                    edges=f['edges'], radius=f['radius']))
+                continue
             plane = cq.Plane.named(f['plane'])
             low = high = None
             if model is not None:
@@ -195,7 +229,7 @@ def export_model(model, kind):
 
 
 def dumps(features):
-    return json.dumps(dict(format='cad-academico', version=3, unit='mm', features=validate(features)),
+    return json.dumps(dict(format='cad-academico', version=4, unit='mm', features=validate(features)),
                       ensure_ascii=False, indent=2, allow_nan=False)
 
 
@@ -203,6 +237,6 @@ def loads(data):
     if len(data) > 200_000:
         raise ModelError('O projeto deve ter no máximo 200 KB.')
     doc = json.loads(data)
-    if not isinstance(doc, dict) or doc.get('format') != 'cad-academico' or doc.get('version') not in (1,2,3) or doc.get('unit') != 'mm':
+    if not isinstance(doc, dict) or doc.get('format') != 'cad-academico' or doc.get('version') not in (1,2,3,4) or doc.get('unit') != 'mm':
         raise ModelError('Arquivo de projeto incompatível.')
     return validate(doc.get('features'))
