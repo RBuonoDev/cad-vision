@@ -1,0 +1,33 @@
+{
+  "format": "cad-academico",
+  "version": 1,
+  "unit": "mm",
+  "features": [
+    {
+      "name": "Base",
+      "operation": "add",
+      "profile": "rectangle",
+      "enabled": true,
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0,
+      "length": 100.0,
+      "width": 60.0,
+      "diameter": 20.0,
+      "depth": 20.0
+    },
+    {
+      "name": "Furo central",
+      "operation": "cut",
+      "profile": "circle",
+      "enabled": true,
+      "x": 0.0,
+      "y": 0.0,
+      "z": 20.0,
+      "length": 20.0,
+      "width": 20.0,
+      "diameter": 16.0,
+      "depth": 20.0
+    }
+  ]
+}
