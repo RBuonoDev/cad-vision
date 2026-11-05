@@ -1,10 +1,34 @@
-# CAD Acadêmico — primeiro protótipo de modelagem de peças
+# CAD Vision · Oficina paramétrica
 
-Esta é uma implementação própria em Python, com CadQuery para geometria e Three.js para visualização. Não contém código extraído do SolidWorks e não é uma reprodução completa dele.
+Aplicativo acadêmico independente em Python, CadQuery e Three.js. A inspeção estática com REA identificou interfaces de esboços e operações do SolidWorks; essas informações orientaram a organização funcional. Esta implementação não incorpora código nem recursos gráficos do SolidWorks.
 
-## Executar no Windows
+## Usar o site
 
-É necessário Python 3.12 de 64 bits. Abra um terminal nesta pasta e execute:
+1. Selecione uma operação no histórico ou clique em **＋ Nova operação**.
+2. Escolha adicionar/remover material e um perfil: retângulo, círculo ou contorno por linhas.
+3. Escolha XY, XZ ou YZ. As coordenadas U/V pertencem ao plano; o deslocamento segue sua normal, indicada no painel.
+4. Digite as cotas ou abra **Esboço 2D**. Retângulos são desenhados entre dois cantos; círculos, do centro à borda; contornos, por cliques nos vértices e fechamento no primeiro ponto. É possível mover os vértices. Shift alinha o novo segmento e a grade permite ajustar o passo em mm.
+5. No desenho, **Usar este esboço** envia o perfil ao painel. **Aplicar operação** reconstrói a peça com os parâmetros do painel. Nenhuma alteração é aplicada só por desenhar.
+6. Use as vistas frontal, superior, direita e isométrica, arestas reais, aramado e grade para inspecionar o sólido.
+7. Salve o projeto JSON para continuar depois, ou exporte STEP/STL.
+
+## Comportamento mecânico
+
+- Extrusão ou corte com profundidade definida e sentido positivo/negativo.
+- Operações simétricas: a profundidade total é dividida igualmente nos dois lados do esboço.
+- Cortes **Atravessar tudo** calculam a profundidade necessária na direção selecionada ao reconstruir.
+- O posicionamento pode usar a origem ou o limite positivo/negativo da caixa do sólido anterior. Referências aos limites acompanham mudanças nas operações anteriores. São referências à caixa, não a faces selecionadas.
+- No plano XZ, a normal positiva é −Y; no YZ, é +X; no XY, é +Z.
+- O histórico permite editar cotas, suprimir, reordenar e excluir. Operações inválidas preservam o último projeto válido.
+- Desfazer/refazer preserva até 25 alterações aplicadas durante a sessão. Recarregar a página pode encerrar a sessão; salve o JSON.
+- Novas peças podem começar vazias. É necessário adicionar material antes de cortar. A peça deve permanecer um único sólido conectado.
+- Arquivos JSON da versão anterior continuam aceitos. Seus planos e posições explícitas mantêm o significado original.
+
+O exemplo é uma placa de 100 × 60 × 20 mm com um furo passante de Ø16 mm. O furo acompanha o limite superior ao mudar a espessura da base.
+
+## Executar e publicar
+
+Python **3.12**, 64 bits. No terminal desta pasta:
 
 ```powershell
 py -3.12 -m venv .venv
@@ -12,65 +36,10 @@ py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m streamlit run app.py
 ```
 
-O navegador abrirá o aplicativo local. A primeira instalação baixa um motor CAD e pode demorar. A modelagem funciona localmente; o visualizador precisa de WebGL e conexão com os servidores públicos das bibliotecas Three.js (`cdnjs.cloudflare.com` e `cdn.jsdelivr.net`).
+Para Streamlit Community Cloud, mantenha `app.py`, `engine.py`, `viewer.py`, `sketch/index.html`, `requirements.txt`, `packages.txt` e `.streamlit/config.toml` nas posições fornecidas. Selecione Python 3.12. O esboço 2D é servido pelo próprio aplicativo; o visualizador usa Three.js dos CDNs públicos cdnjs.cloudflare.com e cdn.jsdelivr.net, exige conexão e WebGL. Preserve Streamlit 1.50.0 e as demais versões fixadas.
 
-## Experimentar
+## Limites
 
-O projeto inicial é uma placa de 100 × 60 × 20 mm com um furo central de 16 mm.
+Sem solver geral de restrições, arcos livres, seleção de faces, planos inclinados, montagens, simulação, filetes ou leitura/gravação SLDPRT. O contorno é um polígono fechado simples com até 100 vértices. Até 50 operações por projeto. STEP exporta a geometria, sem o histórico paramétrico; STL contém a malha, com coordenadas em mm.
 
-1. Selecione **Editar operação** e escolha **Base**.
-2. Altere **Comprimento X** e clique em **Reconstruir peça**.
-3. Selecione **Furo central** para alterar o diâmetro, a posição ou a profundidade do corte.
-4. Para adicionar um ressalto, escolha **Nova operação**, perfil circular, operação **Extrusão (+Z)** e plano **Z = 20**. Desloque o centro para não coincidir com o furo, ou faça o ressalto sobre uma placa sem furo.
-5. Exporte **Projeto editável** para preservar o histórico, **STEP** para intercâmbio CAD ou **STL** para obter uma malha.
-
-Todas as medidas estão em milímetros. O retângulo é centrado nas coordenadas X/Y informadas. A extrusão cresce em +Z a partir do plano Z; o corte avança em −Z. As posições Z são valores explícitos, não referências associativas às faces: se mudar a altura da base, ajuste também o plano dos recursos seguintes.
-
-As alterações do formulário só chegam ao sólido ao clicar em **Reconstruir peça**. A prévia 2D mostra o perfil do formulário. Operações que falham preservam o último projeto válido. Desmarcar **Operação ativa** suprime o recurso; toda a sequência será reconstruída e precisa continuar válida.
-
-## Escopo
-
-- Esboços fechados retangulares e circulares definidos por cotas.
-- Extrusão aditiva e corte extrudado, incluindo bolsões e furos.
-- Histórico ordenado, edição de parâmetros e supressão.
-- Validação de um único sólido conectado, volume e dimensões totais.
-- Projeto JSON próprio e exportação STEP/STL.
-
-Esta versão não inclui desenho livre com mouse, linhas/arcos arbitrários, solver de restrições, seleção de faces, planos inclinados, referências associativas, montagem, simulação, filetes ou leitura/gravação de SLDPRT. STEP transporta o sólido, sem recriar o histórico do SolidWorks; STL transporta apenas a malha.
-
-## Relação com a observação do SolidWorks
-
-Foi aberto o SolidWorks Design Standard 2026 SP3.2 instalado no computador e criado um documento novo de peça. Foram observados os planos frontal/superior/direito, a origem, a árvore de projeto e os comandos de esboço, ressalto/base extrudado e corte extrudado. Essa foi uma inspeção inicial da interface, não uma análise do código interno, nem um teste de equivalência completa entre os programas.
-
-A estrutura e os algoritmos deste protótipo foram escritos independentemente usando APIs documentadas de uma biblioteca CAD pública. Não foram copiados binários, recursos gráficos, ícones ou código proprietário do SolidWorks.
-
-## Arquivos
-
-- `app.py`: interface e editor de operações.
-- `engine.py`: validação, reconstrução, malha e exportação.
-- `viewer.py`: visualizador Three.js.
-- `requirements.txt`: dependências diretas.
-- `.streamlit/config.toml`: tema escuro.
-
-## Verificação realizada
-
-Testes locais em Python 3.12 com CadQuery 2.6.1 passaram para:
-
-- Volume analítico da placa com furo comparado ao sólido gerado.
-- Edição de comprimento com reconstrução do histórico.
-- Bolsão retangular cego, ressalto circular e supressão de recurso.
-- Rejeição de corte sem interseção, sólido desconectado, números inválidos e corte sem base.
-- Geração da malha e exportação STEP/STL.
-- Reimportação do STEP com preservação do volume.
-- Abertura da interface e alteração de cota pelo formulário usando Streamlit AppTest.
-- Sintaxe JavaScript do visualizador.
-
-A renderização WebGL e a navegação 3D no navegador não foram verificadas nesta execução. Os arquivos `exemplo.json`, `exemplo.step` e `exemplo.stl` acompanham a entrega para inspeção e intercâmbio.
-
-## Referências técnicas
-
-- [CadQuery: modelagem paramétrica](https://cadquery.readthedocs.io/en/latest/quickstart.html)
-- [CadQuery: importação e exportação](https://cadquery.readthedocs.io/en/latest/importexport.html)
-
-As dependências mantêm suas próprias licenças. Consulte os respectivos projetos ao distribuir o trabalho acadêmico. Confira dimensões e tolerâncias antes de usar qualquer resultado para fabricação.
-
+O visual tem identidade própria, com painel de cotas, histórico lateral e oficina em verde mineral e grafite. Não foram usados ícones, logotipos nem elementos gráficos extraídos do programa de referência.

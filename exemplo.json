@@ -1,6 +1,6 @@
 {
   "format": "cad-academico",
-  "version": 1,
+  "version": 2,
   "unit": "mm",
   "features": [
     {
@@ -14,7 +14,11 @@
       "length": 100.0,
       "width": 60.0,
       "diameter": 20.0,
-      "depth": 20.0
+      "depth": 20.0,
+      "plane": "XY",
+      "direction": 1,
+      "extent": "blind",
+      "placement": "absolute"
     },
     {
       "name": "Furo central",
@@ -23,11 +27,15 @@
       "enabled": true,
       "x": 0.0,
       "y": 0.0,
-      "z": 20.0,
+      "z": 0.0,
       "length": 20.0,
       "width": 20.0,
       "diameter": 16.0,
-      "depth": 20.0
+      "depth": 20.0,
+      "plane": "XY",
+      "direction": -1,
+      "extent": "through",
+      "placement": "max"
     }
   ]
 }
