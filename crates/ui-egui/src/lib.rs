@@ -423,7 +423,7 @@ impl Default for UiState {
             sketch_return_tab: None,
             ribbon_open: false,
             show_browser: true,
-            show_timeline: true,
+            show_timeline: false,
             show_grid: true,
             show_navigation_bar: true,
             perspective: false,
@@ -3350,6 +3350,10 @@ impl SolveApp {
             self.ui.layout = shell::LayoutMode::Docked;
             self.home.open = false;
         }
+        // 3DE keeps undo/redo history internally, but presents a cleaner modelling canvas.
+        // The legacy History strip and its duplicate Browser mode are intentionally hidden.
+        self.ui.show_timeline = false;
+        self.preferences.history_in_browser = false;
         self.ui.layout.publish(ui.ctx());
         self.preferences.dialog_buttons.publish(ui.ctx());
         self.preferences.toast_place.publish(ui.ctx());

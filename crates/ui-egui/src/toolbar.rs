@@ -526,8 +526,7 @@ pub fn app_bar(app: &mut SolveApp, ui: &mut egui::Ui) {
         let tabs_start = separator_x + 10.0;
         // The version links to its release notes. The 3DE header deliberately omits the upstream
         // bug-report shortcut; support remains available through Help without crowding the CAD.
-        let version =
-            ui.painter().layout_no_wrap(format!("v{}", crate::update::current_version()), FontId::proportional(t.font_small), t.app_bar_text);
+        let version = ui.painter().layout_no_wrap("3DE 0.70.0".into(), FontId::proportional(t.font_small), t.app_bar_text);
         let version_space = if app.header.version == VersionPlace::Header { version_room(r, captions, tabs_start, version.size().x) } else { None };
         let cluster_right = r.right() - captions - version_space.unwrap_or(8.0);
         let report = Rect::from_center_size(pos2(cluster_right, r.center().y), vec2(0.0, 0.0));
@@ -542,15 +541,8 @@ pub fn app_bar(app: &mut SolveApp, ui: &mut egui::Ui) {
             ui.ctx().data_mut(|d| d.insert_temp(egui::Id::unique("sc_ribbon_search"), search));
             crate::scenario::publish_target("titlebar:search", search);
         }
-        // Assistant, Settings and Help form the compact right-hand cluster.
-        if click(ui, help_x(report), "help", app.tr("ui.help"), true) {
-            app.help.menu = !app.help.menu;
-            let at = help_x(report);
-            ui.ctx().data_mut(|d| {
-                d.insert_temp(egui::Id::unique("sc_help_opened"), true);
-                d.insert_temp(egui::Id::unique("sc_help_anchor"), at);
-            });
-        }
+        // The 3DE app bar is deliberately minimal. Help and project information remain
+        // reachable from the Home/About screen instead of occupying a permanent icon.
         // A newer release: its Update button stays before the right cluster, in the space up to
         // the bar's own file actions on the left.
         let controls_left = report.left() - CLUSTER_BUTTONS - search_shift;
@@ -564,8 +556,8 @@ pub fn app_bar(app: &mut SolveApp, ui: &mut egui::Ui) {
         let mut tabs_ui = ui.new_child(egui::UiBuilder::new().max_rect(tabs_rect));
         tabs_ui.set_clip_rect(tabs_rect.intersect(ui.clip_rect()));
         crate::documents::tabs(app, &mut tabs_ui, r, tabs_start, tabs_end);
-        // Settings sits immediately left of Help (also Ctrl+,).
-        let gear = Rect::from_center_size(pos2(report.left() - 52.0, r.center().y), vec2(32.0, 32.0));
+        // Settings is the sole permanent utility in the right-hand cluster (also Ctrl+,).
+        let gear = Rect::from_center_size(pos2(report.left() - 20.0, r.center().y), vec2(32.0, 32.0));
         let gresp = ui.interact(gear, ui.scope_id().with("sc_prefs_button"), Sense::click());
         if gresp.hovered() || gresp.has_focus() {
             ui.painter().rect_filled(gear.shrink(3.0), t.radius_sm, t.app_bar_hover_button);
@@ -573,7 +565,7 @@ pub fn app_bar(app: &mut SolveApp, ui: &mut egui::Ui) {
         icons::paint_app_bar(ui.painter(), gear.shrink(7.0), "settings", 1.0);
         crate::scenario::publish_rect("titlebar:preferences", gear);
         if crate::agent_chat::app_bar_button_shown(app) {
-            assistant_button(app, ui, Rect::from_center_size(pos2(report.left() - 86.0 - search_shift, r.center().y), vec2(32.0, 32.0)));
+            assistant_button(app, ui, Rect::from_center_size(pos2(report.left() - 54.0 - search_shift, r.center().y), vec2(32.0, 32.0)));
         }
         crate::scenario::publish_handle("titlebar:preferences", gear.center());
         let prefs_tip = if cfg!(target_os = "macos") {

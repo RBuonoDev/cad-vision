@@ -1822,7 +1822,8 @@ fn component_rows_inner(
     }
     let d = depth + 1;
     if id == 0 && !crate::render_workspace::active(app) {
-        doc_settings(app, ui, d);
+        // Document units and precision remain available from Preferences; 3DE keeps the
+        // Navigator focused on model geometry and origin references.
         named_view_rows(app, ui, d, acts);
         origin_rows(app, ui, d, acts);
         canvas_rows(app, ui, d, acts);

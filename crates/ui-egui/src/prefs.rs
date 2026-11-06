@@ -438,6 +438,35 @@ const WINDOW_PAGES: &[ui_kit::WindowPage<SolveApp>] = &[
     },
 ];
 
+/// The focused 3DE web preferences: appearance, graphics and navigation only.
+const VISIBLE_WINDOW_PAGES: &[ui_kit::WindowPage<SolveApp>] = &[
+    ui_kit::WindowPage {
+        icon: "prefs_appearance",
+        label: "prefs.structure.appearance",
+        group: None,
+        handle: "prefs:page:Appearance",
+        scroll: true,
+        draw: window_page::<PAGE_APPEARANCE>,
+    },
+    ui_kit::WindowPage {
+        icon: "prefs_graphics",
+        label: "ui.graphics",
+        group: None,
+        handle: "prefs:page:Graphics",
+        scroll: true,
+        draw: window_page::<PAGE_GRAPHICS>,
+    },
+    ui_kit::WindowPage {
+        icon: "prefs_navigation",
+        label: "ui.navigation",
+        group: None,
+        handle: "prefs:page:Navigation",
+        scroll: true,
+        draw: window_page::<PAGE_NAVIGATION>,
+    },
+];
+const VISIBLE_PAGE_INDICES: &[usize] = &[PAGE_APPEARANCE, PAGE_GRAPHICS, PAGE_NAVIGATION];
+
 /// Former page names remain usable through both ui.prefs and scenario handles.
 const PAGE_ALIASES: &[(&str, usize)] = &[
     ("AI", PAGE_ASSISTANT),
@@ -2700,11 +2729,11 @@ pub fn show(app: &mut SolveApp, ctx: &egui::Context) {
         .actions("OK", "Cancel", Some("Apply"))
         .apply_enabled(pending);
     let window = if capturing { window.keep_open_on_escape() } else { window };
-    let mut selected = app.prefs_window.section;
+    let mut selected = VISIBLE_PAGE_INDICES.iter().position(|page| *page == app.prefs_window.section).unwrap_or(0);
     let (closed, action) = window.show_pages_with_header(
         ctx,
         &mut selected,
-        WINDOW_PAGES,
+        VISIBLE_WINDOW_PAGES,
         app,
         search_header,
         clear_search,
@@ -2798,7 +2827,7 @@ fn page(app: &mut SolveApp, ui: &mut egui::Ui, t: &Tokens) {
         // Paint only the pages that match. A first pass is invisible, so the 3D mouse rows and the
         // agent list cannot draw on top of the setting that did match.
         let mut keep = vec![false; WINDOW_PAGES.len()];
-        for (index, _) in WINDOW_PAGES.iter().enumerate() {
+        for &index in VISIBLE_PAGE_INDICES {
             crate::prefs_search::begin_page(ui, index, &page_path(index));
             let before = crate::prefs_search::hits(ui);
             let mut probe = crate::prefs_search::detached_child(ui, ("prefs-search-probe", index), true);
@@ -2806,7 +2835,7 @@ fn page(app: &mut SolveApp, ui: &mut egui::Ui, t: &Tokens) {
             keep[index] = crate::prefs_search::hits(ui) > before;
         }
         crate::prefs_search::rewind_search_layout(ui);
-        for (index, _) in WINDOW_PAGES.iter().enumerate() {
+        for &index in VISIBLE_PAGE_INDICES {
             if !keep.get(index).copied().unwrap_or(false) {
                 continue;
             }
@@ -3327,9 +3356,9 @@ fn button_jobs_that_read<'de, D: serde::Deserializer<'de>>(
 
 /// Every theme the Theme list offers, as (id, name): the modes, the built-in theme files, then
 /// the imported ones.
-fn theme_choices(app: &SolveApp) -> Vec<(String, String)> {
+fn theme_choices(_app: &SolveApp) -> Vec<(String, String)> {
     let modes = THEMES.iter().filter(|(id, _)| *id != "system").map(|(id, label)| ((*id).to_string(), crate::i18n::tr_label(label).to_string()));
-    let files = crate::theme_files::builtin().iter().chain(&app.preferences.custom_themes).map(|t| (t.id.clone(), t.name.clone()));
+    let files = crate::theme_files::builtin().iter().filter(|t| t.id == "solidcraft-95").map(|t| (t.id.clone(), t.name.clone()));
     let mut choices: Vec<_> = modes.chain(files).collect();
     choices.sort_by_key(|(id, _)| match id.as_str() {
         "light" => 0,

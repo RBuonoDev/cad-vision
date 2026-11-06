@@ -56,81 +56,10 @@ impl Catalog {
 }
 
 static ENGLISH: Catalog = Catalog::new("en", "English", include_str!(concat!(env!("OUT_DIR"), "/locales/en.json")));
-static ARABIC: Catalog = Catalog::new("ar", "العربية", include_str!(concat!(env!("OUT_DIR"), "/locales/ar.json")));
-static BULGARIAN: Catalog = Catalog::new("bg", "Български", include_str!(concat!(env!("OUT_DIR"), "/locales/bg.json")));
-static BOSNIAN: Catalog = Catalog::new("bs", "Bosanski", include_str!(concat!(env!("OUT_DIR"), "/locales/bs.json")));
-static CATALAN: Catalog = Catalog::new("ca", "Català", include_str!(concat!(env!("OUT_DIR"), "/locales/ca.json")));
-static CZECH: Catalog = Catalog::new("cs", "Čeština", include_str!(concat!(env!("OUT_DIR"), "/locales/cs.json")));
-static DANISH: Catalog = Catalog::new("da", "Dansk", include_str!(concat!(env!("OUT_DIR"), "/locales/da.json")));
-static GERMAN: Catalog = Catalog::new("de", "Deutsch", include_str!(concat!(env!("OUT_DIR"), "/locales/de.json")));
-/// English in UK spelling: only the messages whose spelling differs; the rest are English's.
-static ENGLISH_UK: Catalog = Catalog::new("en-GB", "English (UK)", include_str!(concat!(env!("OUT_DIR"), "/locales/en-GB.json")));
-static SPANISH: Catalog = Catalog::new("es", "Español (España)", include_str!(concat!(env!("OUT_DIR"), "/locales/es.json")));
-static FINNISH: Catalog = Catalog::new("fi", "Suomi", include_str!(concat!(env!("OUT_DIR"), "/locales/fi.json")));
-static FRENCH: Catalog = Catalog::new("fr", "Français", include_str!(concat!(env!("OUT_DIR"), "/locales/fr.json")));
-static GALICIAN: Catalog = Catalog::new("gl", "Galego", include_str!(concat!(env!("OUT_DIR"), "/locales/gl.json")));
-static HEBREW: Catalog = Catalog::new("he", "עברית", include_str!(concat!(env!("OUT_DIR"), "/locales/he.json")));
-static CROATIAN: Catalog = Catalog::new("hr", "Hrvatski", include_str!(concat!(env!("OUT_DIR"), "/locales/hr.json")));
-static HUNGARIAN: Catalog = Catalog::new("hu", "Magyar", include_str!(concat!(env!("OUT_DIR"), "/locales/hu.json")));
-static INDONESIAN: Catalog = Catalog::new("id", "Bahasa Indonesia", include_str!(concat!(env!("OUT_DIR"), "/locales/id.json")));
-static ITALIAN: Catalog = Catalog::new("it", "Italiano", include_str!(concat!(env!("OUT_DIR"), "/locales/it.json")));
-static JAPANESE: Catalog = Catalog::new("ja", "日本語", include_str!(concat!(env!("OUT_DIR"), "/locales/ja.json")));
-static GEORGIAN: Catalog = Catalog::new("ka", "ქართული", include_str!(concat!(env!("OUT_DIR"), "/locales/ka.json")));
-static KOREAN: Catalog = Catalog::new("ko", "한국어", include_str!(concat!(env!("OUT_DIR"), "/locales/ko.json")));
-static MALAY: Catalog = Catalog::new("ms", "Bahasa Melayu", include_str!(concat!(env!("OUT_DIR"), "/locales/ms.json")));
-static NORWEGIAN: Catalog = Catalog::new("nb", "Norsk bokmål", include_str!(concat!(env!("OUT_DIR"), "/locales/nb.json")));
-static DUTCH: Catalog = Catalog::new("nl", "Nederlands", include_str!(concat!(env!("OUT_DIR"), "/locales/nl.json")));
-static POLISH: Catalog = Catalog::new("pl", "Polski", include_str!(concat!(env!("OUT_DIR"), "/locales/pl.json")));
 static PORTUGUESE_BR: Catalog = Catalog::new("pt-BR", "Português (Brasil)", include_str!(concat!(env!("OUT_DIR"), "/locales/pt-BR.json")));
-static ROMANIAN: Catalog = Catalog::new("ro", "Română", include_str!(concat!(env!("OUT_DIR"), "/locales/ro.json")));
-static RUSSIAN: Catalog = Catalog::new("ru", "Русский", include_str!(concat!(env!("OUT_DIR"), "/locales/ru.json")));
-static SERBIAN: Catalog = Catalog::new("sr", "Српски", include_str!(concat!(env!("OUT_DIR"), "/locales/sr.json")));
-static SWEDISH: Catalog = Catalog::new("sv", "Svenska", include_str!(concat!(env!("OUT_DIR"), "/locales/sv.json")));
-static TURKISH: Catalog = Catalog::new("tr", "Türkçe", include_str!(concat!(env!("OUT_DIR"), "/locales/tr.json")));
-static UKRAINIAN: Catalog = Catalog::new("uk", "Українська", include_str!(concat!(env!("OUT_DIR"), "/locales/uk.json")));
-static VIETNAMESE: Catalog = Catalog::new("vi", "Tiếng Việt", include_str!(concat!(env!("OUT_DIR"), "/locales/vi.json")));
-static CHINESE: Catalog = Catalog::new("zh", "中文", include_str!(concat!(env!("OUT_DIR"), "/locales/zh.json")));
-static CHINESE_TRADITIONAL: Catalog = Catalog::new("zh-TW", "繁體中文", include_str!(concat!(env!("OUT_DIR"), "/locales/zh-TW.json")));
-/// English first (the fallback), then by language id, one per line so that adding a language
-/// doesn't edit a line another addition edits.
-#[rustfmt::skip]
-pub const LOCALES: &[&Catalog] = &[
-    &ENGLISH,
-    &ARABIC,
-    &BULGARIAN,
-    &BOSNIAN,
-    &CATALAN,
-    &CZECH,
-    &DANISH,
-    &GERMAN,
-    &ENGLISH_UK,
-    &SPANISH,
-    &FINNISH,
-    &FRENCH,
-    &GALICIAN,
-    &HEBREW,
-    &CROATIAN,
-    &HUNGARIAN,
-    &INDONESIAN,
-    &ITALIAN,
-    &JAPANESE,
-    &GEORGIAN,
-    &KOREAN,
-    &MALAY,
-    &NORWEGIAN,
-    &DUTCH,
-    &POLISH,
-    &PORTUGUESE_BR,
-    &ROMANIAN,
-    &RUSSIAN,
-    &SERBIAN,
-    &SWEDISH,
-    &TURKISH,
-    &UKRAINIAN,
-    &VIETNAMESE,
-    &CHINESE,
-    &CHINESE_TRADITIONAL,
-];
+/// 3DE is a Brazilian Portuguese web application. English remains an internal fallback catalog
+/// for untranslated engine diagnostics, but it is not an offered interface language.
+pub const LOCALES: &[&Catalog] = &[&PORTUGUESE_BR];
 
 pub fn is_supported(id: &str) -> bool {
     LOCALES.iter().any(|catalog| catalog.id == id)
@@ -140,43 +69,10 @@ pub fn is_supported(id: &str) -> bool {
 /// resolves through [`system_language`] wherever a catalog is needed.
 pub const SYSTEM: &str = "system";
 
-/// Match the system's preferred locale tags against the catalogs: the exact tag first
-/// (`zh-TW`, `pt-BR`, `en-GB`), then the tag's base language (`zh-CN` → `zh`, `de-AT` → `de`),
-/// then English. A Chinese tag goes by its script or region instead ([`chinese_catalog`]).
-/// Tags come in the system's order of preference; the first one that matches wins.
+/// 3DE's browser interface is intentionally fixed to Brazilian Portuguese.
 pub fn match_system_tags(tags: &[String]) -> &'static str {
-    for tag in tags {
-        let tag = tag.replace('_', "-");
-        if let Some(catalog) = chinese_catalog(&tag) {
-            return catalog;
-        }
-        if let Some(catalog) = LOCALES.iter().find(|catalog| catalog.id.eq_ignore_ascii_case(&tag)) {
-            return catalog.id;
-        }
-        let base = tag.split('-').next().unwrap_or(&tag);
-        if let Some(catalog) = LOCALES.iter().find(|catalog| catalog.id.eq_ignore_ascii_case(base)) {
-            return catalog.id;
-        }
-    }
-    ENGLISH.id
-}
-
-/// The catalog for a Chinese tag (#10306): by its script when it has one (`Hant` → `zh-TW`,
-/// `Hans` → `zh`), else by its region (`TW`, `HK` and `MO` use Traditional characters, so
-/// `zh-TW`; any other region, or none, `zh`). macOS lists its languages with a script
-/// (`zh-Hant-TW`), which no catalog matches exactly, and the base `zh` is Simplified.
-fn chinese_catalog(tag: &str) -> Option<&'static str> {
-    let mut parts = tag.split('-');
-    if !parts.next().is_some_and(|base| base.eq_ignore_ascii_case("zh")) {
-        return None;
-    }
-    let rest: Vec<&str> = parts.collect();
-    let traditional = match rest.iter().find(|part| part.len() == 4) {
-        Some(script) => script.eq_ignore_ascii_case("Hant"),
-        None => rest.iter().any(|part| ["TW", "HK", "MO"].iter().any(|region| part.eq_ignore_ascii_case(region))),
-    };
-    let id = if traditional { "zh-TW" } else { "zh" };
-    LOCALES.iter().find(|catalog| catalog.id == id).map(|catalog| catalog.id)
+    let _ = tags;
+    PORTUGUESE_BR.id
 }
 
 /// The catalog id the system asks for, read once per process: the OS locale on desktop
@@ -184,7 +80,7 @@ fn chinese_catalog(tag: &str) -> Option<&'static str> {
 pub fn system_language() -> &'static str {
     SYSTEM_LANGUAGE.get_or_init(|| {
         // Tests read the same words on every PC, whatever its language.
-        if cfg!(test) { ENGLISH.id } else { match_system_tags(&sys_locale::get_locales().collect::<Vec<_>>()) }
+        PORTUGUESE_BR.id
     })
 }
 
@@ -193,7 +89,7 @@ static SYSTEM_LANGUAGE: OnceLock<&'static str> = OnceLock::new();
 /// `cfg!(test)` for the tests outside this crate, which link it without that: they all start from
 /// the test harness, which calls this first.
 pub(crate) fn pin_system_language() {
-    let _ = SYSTEM_LANGUAGE.set(ENGLISH.id);
+    let _ = SYSTEM_LANGUAGE.set(PORTUGUESE_BR.id);
 }
 
 /// The catalog id a `language` preference resolves to: the saved choice, or the system's for
@@ -208,11 +104,8 @@ pub struct Locale(&'static Catalog);
 
 impl Locale {
     pub fn for_language(id: &str) -> Self {
-        if id == SYSTEM {
-            let system = system_language();
-            return Self(LOCALES.iter().copied().find(|catalog| catalog.id == system).unwrap_or(&ENGLISH));
-        }
-        Self(LOCALES.iter().copied().find(|catalog| catalog.id == id).unwrap_or(&ENGLISH))
+        let _ = id;
+        Self(&PORTUGUESE_BR)
     }
 
     pub fn name(self) -> &'static str {
@@ -358,7 +251,7 @@ fn interpolate(template: &str, args: &[(&str, &str)]) -> String {
 thread_local! {
     // Helpers without an app reference share a render scope. Nested renders restore
     // their caller's locale; no owned language strings or persistent global setting.
-    static CURRENT: Cell<Locale> = const { Cell::new(Locale(&ENGLISH)) };
+    static CURRENT: Cell<Locale> = const { Cell::new(Locale(&PORTUGUESE_BR)) };
     /// Theme-authored language maps are already resolved and are not catalog source labels.
     static RESOLVED_LABELS: Cell<bool> = const { Cell::new(false) };
 }

@@ -31,6 +31,7 @@ runtime_path = next(static_dir.glob("solidcraft-web-*.js"))
 styles_path = next(static_dir.glob("loading-*.css"))
 runtime = runtime_path.read_text(encoding="utf-8")
 styles = styles_path.read_text(encoding="utf-8")
+build_id = runtime_path.stem.rsplit("-", 1)[-1]
 module_start = document.index('<script type="module">') + len('<script type="module">')
 module_end = document.index("</script>", module_start)
 loader = document[module_start:module_end]
@@ -40,11 +41,19 @@ loader = loader.replace(
 )
 loader = re.sub(
     r"const wasm = await init\(\{ module_or_path: '[^']+\.wasm' \}\);",
-    """const compressed = await fetch('./engine.wasm.gz');
+    f"""if ('serviceWorker' in navigator) {{
+  const registrations = await navigator.serviceWorker.getRegistrations();
+  await Promise.all(registrations.map(registration => registration.unregister()));
+}}
+if ('caches' in window) {{
+  const names = await caches.keys();
+  await Promise.all(names.map(name => caches.delete(name)));
+}}
+const compressed = await fetch('./engine.wasm.gz?build={build_id}', {{cache: 'no-store'}});
 if (!compressed.ok || !compressed.body) throw new Error('Não foi possível carregar o motor 3D.');
 const stream = compressed.body.pipeThrough(new DecompressionStream('gzip'));
-const wasmResponse = new Response(stream, {headers: {'Content-Type': 'application/wasm'}});
-const initializedWasm = await init({ module_or_path: wasmResponse });""",
+const wasmResponse = new Response(stream, {{headers: {{'Content-Type': 'application/wasm'}}}});
+const initializedWasm = await init({{ module_or_path: wasmResponse }});""",
     loader,
     count=1,
 )
@@ -58,4 +67,7 @@ document = re.sub(
 )
 document = document.replace("<head>", '<head><base href="app/static/3de/">', 1)
 document = re.sub(r'<link rel="preload" href="[^\"]+\.wasm"[^>]*>', "", document)
+# Streamlit already owns online updates. A nested service worker would keep an obsolete CAD
+# engine after deployment, so the embedded app always loads the build identified above.
+document = document.replace('if ("serviceWorker" in navigator)', 'if (false && "serviceWorker" in navigator)')
 st.components.v1.html(document, height=920, scrolling=False)
