@@ -1,0 +1,14 @@
+{
+  "name": "3DE — Estúdio CAD",
+  "short_name": "3DE",
+  "description": "Estúdio CAD paramétrico para modelagem 3D.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#070c12",
+  "theme_color": "#070c12",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    { "src": "3de-mark.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
