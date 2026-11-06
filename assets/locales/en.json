@@ -2081,6 +2081,8 @@
   "home.short_date": "{day} {month}",
   "home.shortcuts": "Keyboard shortcuts",
   "home.start_hint": "Create a design, open a recent file, or explore a sample.",
+  "home.technical_drawing": "Read technical drawing…",
+  "home.technical_drawing_hint": "PNG, JPG, SVG or DXF · automatically creates an editable sketch",
   "home.whats_new": "What's new",
   "home.yesterday": "Yesterday",
   "import_report.details": "Details:",

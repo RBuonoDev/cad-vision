@@ -611,6 +611,7 @@ enum FileAction {
     New(&'static str),
     Open,
     Import,
+    TechnicalDrawing,
     Save,
     SaveAs,
     Export(&'static str),
@@ -836,11 +837,12 @@ fn start_content(app: &mut SolveApp, ui: &mut egui::Ui, action: &mut Option<File
         ("home:new_inches", "new", app.tr("home.new_inches"), app.tr("home.new_inches_hint"), false),
         ("home:open_tile", "open", app.tr("home.open"), open_hint.as_str(), false),
         ("home:import", "import", app.tr("home.import"), app.tr("home.import_hint"), false),
+        ("home:technical_drawing", "canvas", app.tr("home.technical_drawing"), app.tr("home.technical_drawing_hint"), true),
     ];
     FileView::section(ui, app.tr_label("New"), t.space_12, |ui| {
         // Two generous columns keep the four primary workflows easy to scan instead of
         // stretching a dense strip of controls across a wide monitor.
-        for row_start in [0, 2] {
+        for row_start in [0, 2, 4] {
             if row_start > 0 {
                 ui.add_space(t.file_grid_gap);
             }
@@ -854,7 +856,8 @@ fn start_content(app: &mut SolveApp, ui: &mut egui::Ui, action: &mut Option<File
                         0 => FileAction::New("mm"),
                         1 => FileAction::New("in"),
                         2 => FileAction::Open,
-                        _ => FileAction::Import,
+                        3 => FileAction::Import,
+                        _ => FileAction::TechnicalDrawing,
                     });
                 }
             });
@@ -1075,6 +1078,49 @@ fn dispatch(app: &mut SolveApp, ctx: &egui::Context, action: FileAction) {
                     app.open_path_async(&path);
                 }
             })
+        }
+        FileAction::TechnicalDrawing => {
+            app.pick_open_for(&["png", "jpg", "jpeg", "svg", "dxf"], |app, path| {
+                let Some(path) = path else { return };
+                let extension = std::path::Path::new(&path).extension().and_then(|value| value.to_str()).unwrap_or("").to_ascii_lowercase();
+                if matches!(extension.as_str(), "svg" | "dxf") {
+                    app.open_path_async(&path);
+                    return;
+                }
+                crate::documents::new_design(app);
+                let name = std::path::Path::new(&path)
+                    .file_stem()
+                    .and_then(|value| value.to_str())
+                    .filter(|value| !value.trim().is_empty())
+                    .unwrap_or("Desenho técnico")
+                    .to_string();
+                let placed = app.run(
+                    "canvas.insert",
+                    serde_json::json!({
+                        "path": path,
+                        "plane": "XY",
+                        "width": 100,
+                        "opacity": 0.35,
+                        "name": format!("Referência — {name}"),
+                    }),
+                );
+                let Ok(placed) = placed else { return };
+                let Some(canvas) = placed.get("canvas").and_then(serde_json::Value::as_u64) else { return };
+                let traced = app.run(
+                    "canvas.to_sketch",
+                    serde_json::json!({"canvas": canvas, "name": format!("Esboço — {name}")}),
+                );
+                if let Ok(result) = traced {
+                    app.home.open = false;
+                    let _ = app.run("view.fit", serde_json::json!({}));
+                    let curves = result.get("curves").and_then(serde_json::Value::as_u64).unwrap_or(0);
+                    let outlines = result.get("outlines").and_then(serde_json::Value::as_u64).unwrap_or(0);
+                    app.set_status(
+                        format!("Desenho reconhecido: {outlines} contorno(s) e {curves} elemento(s). Confira as cotas e ajuste a escala antes de extrudar."),
+                        false,
+                    );
+                }
+            });
         }
         FileAction::Save => {
             app.home.open = false;
