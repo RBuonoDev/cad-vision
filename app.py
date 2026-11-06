@@ -11,8 +11,14 @@ st.markdown(
     html, body, [data-testid="stAppViewContainer"], .stApp { background: #070c12; }
     [data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecoration"],
     [data-testid="stStatusWidget"], footer { display: none !important; }
-    .block-container { max-width: none; padding: 0 !important; }
-    iframe { display: block; border: 0; width: 100%; }
+    .block-container { max-width: none !important; padding: 0 !important; }
+    [data-testid="stElementContainer"]:has(iframe) {
+        width: 100vw !important; max-width: none !important;
+    }
+    iframe {
+        display: block; border: 0; width: 100vw !important;
+        min-width: 100vw !important;
+    }
     </style>
     """,
     unsafe_allow_html=True,
