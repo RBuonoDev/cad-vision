@@ -17,8 +17,8 @@
   <meta name="twitter:description" content="CAD paramétrico para modelagem 3D no navegador.">
 
 <script type="module">
-import init, * as bindings from './solidcraft-web-c54f403f518443e7.js';
-const wasm = await init({ module_or_path: './solidcraft-web-64b108d4442ff35d_bg.wasm' });
+import init, * as bindings from './solidcraft-web-f9ac18b031d1c728.js';
+const wasm = await init({ module_or_path: './solidcraft-web-5042f362b4703664_bg.wasm' });
 
 
 window.wasmBindings = bindings;
@@ -45,7 +45,7 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
   
   
   
-<link rel="modulepreload" href="./solidcraft-web-c54f403f518443e7.js" crossorigin="anonymous" integrity="sha384-Da61LigdlUo4Uty7ByrAngNpbd2c0msl7IHkHYLt+uGjy1L0p4yQ1ZO3T8oBqg0F"><link rel="preload" href="./solidcraft-web-64b108d4442ff35d_bg.wasm" crossorigin="anonymous" integrity="sha384-OrDqvAEyR1tl+85yKKYMhPrW3yPkzoYvWcdhqZtTxdQ3kW93t0BHHhSiw6y6Xmwn" as="fetch" type="application/wasm"></head>
+<link rel="modulepreload" href="./solidcraft-web-f9ac18b031d1c728.js" crossorigin="anonymous" integrity="sha384-iG6HKIeedE+LrJceptfhmfpNzQjozHkMjBWZIodZCxS+fBShRxpKpu6e3ZQVlrDu"><link rel="preload" href="./solidcraft-web-5042f362b4703664_bg.wasm" crossorigin="anonymous" integrity="sha384-CQy4PtFzFIrKFwOIYN3ZVM7/dPldJJfFfg1XbhjPPt7r3nGerbImab1vAsz9nzlh" as="fetch" type="application/wasm"></head>
 <body>
   <canvas id="solidcraft_canvas"></canvas>
   <div id="solidcraft_loading" role="status"><img src="loading-logo.svg" alt=""><span class="sr-only">Carregando o 3DE&hellip;</span></div>

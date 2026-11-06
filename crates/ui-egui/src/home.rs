@@ -1,6 +1,5 @@
-//! The start page: New Design, Open, the recent designs and the built-in samples, each with a
-//! picture of the design rendered from it. Shown on launch without a file and from the house
-//! button or the first document tab; selecting a design returns to its view.
+//! The start page: New Design, Open and recent designs. Shown on launch without a file and from
+//! the house button or the first document tab; selecting a design returns to its view.
 
 use std::collections::HashMap;
 
@@ -843,19 +842,27 @@ fn start_content(app: &mut SolveApp, ui: &mut egui::Ui, action: &mut Option<File
         ("home:import", "import", app.tr("home.import"), app.tr("home.import_hint"), false),
     ];
     FileView::section(ui, app.tr_label("New"), t.space_12, |ui| {
-        FileView::grid(ui, "home_new", FileView::tile_min_width(), tiles.len(), |ui, index, width| {
-            let Some((id, icon, title, hint, primary)) = tiles.get(index) else { return };
-            let response = FileView::action_tile(ui, id, width, icon, title, hint, *primary);
-            publish(id, &response);
-            if response.clicked() {
-                *action = Some(match index {
-                    0 => FileAction::New("mm"),
-                    1 => FileAction::New("in"),
-                    2 => FileAction::Open,
-                    _ => FileAction::Import,
-                });
+        // Two generous columns keep the four primary workflows easy to scan instead of
+        // stretching a dense strip of controls across a wide monitor.
+        for row_start in [0, 2] {
+            if row_start > 0 {
+                ui.add_space(t.file_grid_gap);
             }
-        });
+            FileView::grid(ui, &format!("home_new_{row_start}"), FileView::tile_min_width(), 2, |ui, row_index, width| {
+                let index = row_start + row_index;
+                let Some((id, icon, title, hint, primary)) = tiles.get(index) else { return };
+                let response = FileView::action_tile(ui, id, width, icon, title, hint, *primary);
+                publish(id, &response);
+                if response.clicked() {
+                    *action = Some(match index {
+                        0 => FileAction::New("mm"),
+                        1 => FileAction::New("in"),
+                        2 => FileAction::Open,
+                        _ => FileAction::Import,
+                    });
+                }
+            });
+        }
     });
     ui.add_space(t.file_section_gap);
     FileView::section(ui, app.tr("home.recent"), t.space_10, |ui| {
@@ -911,28 +918,6 @@ fn start_content(app: &mut SolveApp, ui: &mut egui::Ui, action: &mut Option<File
                     }
                 }
             });
-        }
-    });
-    ui.add_space(t.file_section_gap);
-    FileView::section(ui, app.tr("home.samples"), t.space_10, |ui| {
-        let samples: Vec<_> = solidcraft_engine::sample::samples()
-            .iter()
-            .enumerate()
-            .map(|(index, sample)| {
-                let hint = if app.home.wanted == Some(index) { app.tr("home.opening") } else { app.tr_label(sample.about) };
-                ui_kit::SampleCard {
-                    title: app.tr_label(sample.name),
-                    description: hint,
-                    icon: "box",
-                    thumbnail: texture(app.home.thumbs.get(&format!("sample:{index}")).and_then(Option::as_ref)),
-                }
-            })
-            .collect();
-        for (index, response) in FileView::sample_grid(ui, "home:sample", &samples).into_iter().enumerate() {
-            publish(&format!("home:sample:{index}"), &response);
-            if response.clicked() {
-                open_sample(app, index);
-            }
         }
     });
 }
@@ -1649,24 +1634,26 @@ mod tests {
     }
 
     #[test]
-    fn file_view_desktop_cards_align_in_rows_and_remain_visible() {
+    fn file_view_desktop_actions_form_a_clean_two_column_grid() {
         let mut h = crate::scenario::Harness::new();
         h.call("ui.resize", serde_json::json!({"width":1400,"height":900}));
         h.app.home.show(0);
         h.frames(5);
         let page = crate::scenario::rect_of("home:page").unwrap();
         let first = crate::scenario::rect_of("home:new_mm").unwrap();
-        for id in ["home:new_mm", "home:new_inches", "home:open_tile", "home:import"] {
+        for id in ["home:new_mm", "home:new_inches"] {
             let rect = crate::scenario::rect_of(id).unwrap();
             assert!((rect.top() - first.top()).abs() < 0.5, "{id}: action tiles must share a row");
             assert!(page.contains_rect(rect), "{id}: card is off screen");
         }
-        let first = crate::scenario::rect_of("home:sample:0").unwrap();
-        for i in 0..6 {
-            let rect = crate::scenario::rect_of(&format!("home:sample:{i}")).unwrap();
-            assert!((rect.top() - first.top()).abs() < 0.5, "sample {i}: thumbnails must share a row");
-            assert!(page.contains_rect(rect), "sample {i}: card is off screen");
+        let second = crate::scenario::rect_of("home:open_tile").unwrap();
+        for id in ["home:open_tile", "home:import"] {
+            let rect = crate::scenario::rect_of(id).unwrap();
+            assert!((rect.top() - second.top()).abs() < 0.5, "{id}: action tiles must share a row");
+            assert!(rect.top() > first.bottom(), "{id}: second row must sit below the first");
+            assert!(page.contains_rect(rect), "{id}: card is off screen");
         }
+        assert!(crate::scenario::rect_of("home:sample:0").is_none(), "the focused 3DE start page has no example gallery");
     }
 
     #[test]
