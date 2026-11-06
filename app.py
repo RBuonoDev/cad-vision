@@ -275,7 +275,14 @@ with workspace:
         else:
             st.caption('Desenhe no plano escolhido. Use o botão abaixo do desenho para enviar o perfil ao painel de cotas.')
             version=hashlib.sha256(repr(candidate_feature).encode()).hexdigest()
-            value=sketch(feature=candidate_feature,version=version,key=f'sketch_{s.revision}_{idx}',default=None)
+            reference=[]
+            prior=features if idx is None else features[:idx]
+            if any(f['enabled'] for f in prior):
+                prior_mesh=compile_project(dumps(prior))['mesh']
+                if prior_mesh:
+                    axes_2d={'XY':(0,1),'XZ':(0,2),'YZ':(1,2)}[candidate_feature['plane']]
+                    reference=[[[p[axes_2d[0]],p[axes_2d[1]]] for p in edge] for edge in prior_mesh['edges']]
+            value=sketch(feature=candidate_feature,reference=reference,version=version,key=f'sketch_{s.revision}_{idx}',default=None)
             if isinstance(value,dict) and value.get('nonce')!=s.sketch_nonce:
                 s.sketch_nonce=value.get('nonce')
                 if value.get('profile')==profile:
