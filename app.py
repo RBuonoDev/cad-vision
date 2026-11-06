@@ -39,7 +39,7 @@ def compile_project(serialized):
     return dict(mesh=mesh(model), history=history, volume=model.val().Volume(),
                 size=[box.xlen,box.ylen,box.zlen], step=export_model(model,'STEP'), stl=export_model(model,'STL'))
 
-for k,v in dict(features=validate(copy.deepcopy(EXAMPLE)), revision=0, selected=-1, draft=None,
+for k,v in dict(features=[], revision=0, selected=-1, draft=None,
                 undo=[], redo=[], sketch_nonce=None, notice=None).items():
     st.session_state.setdefault(k,v)
 s = st.session_state
@@ -64,8 +64,23 @@ def restore(source, dest):
         s.features=s[source].pop()
         select(-1)
 
+def prepare(kind):
+    """Prepare a feature without committing or discarding the existing solid."""
+    has_body=any(f['enabled'] for f in s.features)
+    select(-1)
+    cut=kind in ('hole','pocket')
+    s.draft=dict(name={'rectangle':'Base retangular','circle':'Base circular','polygon':'Contorno livre',
+                       'boss':'Ressalto','hole':'Furo passante','pocket':'Bolsão'}[kind],
+        operation='cut' if cut else 'add',profile='circle' if kind in ('circle','boss','hole') else 'polygon' if kind=='polygon' else 'rectangle',
+        x=0,y=0,z=0,length=60,width=40,diameter=30 if kind=='circle' else 12,depth=10,
+        enabled=True,plane='XY',direction=-1 if cut else 1,extent='through' if kind=='hole' else 'blind',
+        placement='max' if has_body else 'absolute',points=[] if kind=='polygon' else [[-20,-15],[20,-15],[20,15],[-20,15]],constraints=[])
+    if kind=='pocket':s.draft.update(length=20,width=15,depth=5)
+
 with st.sidebar:
     st.markdown('### Seu projeto')
+    if st.button('Nova peça do zero',width='stretch'):
+        commit([],-1);s.notice='Projeto vazio. Escolha um perfil para criar sua primeira peça.';st.rerun()
     a,b=st.columns(2)
     a.button('Desfazer', disabled=not s.undo, on_click=restore,args=('undo','redo'), width='stretch')
     b.button('Refazer', disabled=not s.redo, on_click=restore,args=('redo','undo'), width='stretch')
@@ -99,12 +114,23 @@ with st.sidebar:
     st.caption('Cada operação contém um esboço. Alterar uma cota reconstrói as operações seguintes.')
 
 features=s.features
+has_body=any(f['enabled'] for f in features)
+st.subheader('Comece sua peça' if not has_body else 'Continue modelando')
+st.caption('Escolha um perfil, ajuste as medidas e clique em Aplicar operação. Os atalhos preparam a operação; só Aplicar altera a peça.')
+a,b,c=st.columns(3)
+a.button('Base retangular',on_click=prepare,args=('rectangle',),disabled=has_body,width='stretch')
+b.button('Base circular',on_click=prepare,args=('circle',),disabled=has_body,width='stretch')
+c.button('Desenhar contorno',on_click=prepare,args=('polygon',),disabled=has_body,width='stretch')
+a,b,c=st.columns(3)
+a.button('Adicionar ressalto',on_click=prepare,args=('boss',),disabled=not has_body,width='stretch')
+b.button('Furo passante',on_click=prepare,args=('hole',),disabled=not has_body,width='stretch')
+c.button('Criar bolsão',on_click=prepare,args=('pocket',),disabled=not has_body,width='stretch')
 idx=s.selected if 0<=s.selected<len(features) else None
 if s.draft is None:
     s.draft=copy.deepcopy(features[idx] if idx is not None else dict(
-        name=f'Operação {len(features)+1}',operation='cut' if features else 'add',profile='rectangle',
-        x=0,y=0,z=0,length=30,width=20,diameter=12,depth=10,enabled=True,plane='XY',direction=-1 if features else 1,
-        extent='blind',placement='max' if features else 'absolute',points=[[-20,-15],[20,-15],[20,15],[-20,15]]))
+        name=f'Operação {len(features)+1}',operation='add',profile='rectangle',
+        x=0,y=0,z=0,length=60,width=40,diameter=30,depth=10,enabled=True,plane='XY',direction=1,
+        extent='blind',placement='max' if has_body else 'absolute',points=[[-20,-15],[20,-15],[20,15],[-20,15]]))
 d=s.draft
 for field, default in dict(profile='rectangle', x=0., y=0., z=0., length=30., width=20.,
                            diameter=12., depth=10., plane='XY', direction=1,
@@ -223,7 +249,12 @@ with workspace:
             if result['mesh']:
                 components.html(html(result['mesh']),height=535,scrolling=False)
             else:
-                st.info('Peça vazia. Desenhe um perfil em Esboço 2D e aplique uma operação de adição.')
+                st.info('Sua peça começa aqui. Defina o perfil no painel ou desenhe na aba Esboço 2D; depois clique em Aplicar operação para criar o sólido.')
+                st.markdown('**Referência para começar**')
+                st.image('''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 300" role="img" aria-label="Área de trabalho vazia com origem e eixos X, Y e Z">
+                <rect width="640" height="300" rx="12" fill="#101c26"/><g stroke="#28424c" fill="none"><path d="M100 230L320 100L540 230L320 285Z"/><path d="M210 165L430 260M430 165L210 260M155 198L375 292"/></g>
+                <g stroke-width="3"><path d="M320 230L475 230" stroke="#e7a48e"/><path d="M320 230L220 170" stroke="#65d8ba"/><path d="M320 230V70" stroke="#70bded"/></g>
+                <g fill="#dce8ea" font-family="sans-serif" font-size="16"><text x="485" y="235">X</text><text x="195" y="165">Y</text><text x="315" y="55">Z</text><text x="335" y="255">Origem · 0, 0, 0 mm</text></g><circle cx="320" cy="230" r="5" fill="#f2c97c"/></svg>''',width='stretch')
             a,b,c=st.columns(3)
             a.metric('Volume',f"{result['volume']:,.2f} mm³")
             b.metric('Dimensões X × Y × Z',' × '.join(f'{v:.1f}' for v in result['size'])+' mm')
@@ -253,4 +284,5 @@ with workspace:
     with st.expander('Como trabalhar'):
         st.write('1. Escolha uma operação no histórico ou crie uma nova. 2. Para adição e corte, defina o plano, o esboço e a profundidade. Para filete e chanfro, selecione um grupo de arestas e informe o tamanho. 3. Aplique a operação. Um erro mantém a última peça válida. Desfazer/Refazer atua nas alterações aplicadas, durante esta sessão.')
         st.caption('Versão em desenvolvimento: um sólido conectado, perfis fechados e relações entre linhas. Filete e chanfro selecionam grupos de arestas, ainda sem seleção individual no visualizador. Montagens, simulação e importação SLDPRT não estão disponíveis. Salve o JSON antes de sair; STEP exporta a geometria e STL a malha em mm.')
+
 
