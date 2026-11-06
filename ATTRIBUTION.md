@@ -222,6 +222,14 @@ Editable drawing code, native projects and shipped exports are collected under `
 | assets/styles/ui/themes/akari.json | SolidCraft contributors (Kai Evans) | original SolidCraft theme file mapping SolidCraft's UI colours to the Akari palette (light) of the Okibi design system by Kai Evans (https://kaievns.github.io/okibi-akiri-design-system-spec/) | MIT OR Apache-2.0 |
 | assets/styles/web/loading-logo.svg | 3DE contributors | Original 3DE isometric cube and loading artwork | MIT OR Apache-2.0 |
 | assets/styles/web/3de-mark.svg | 3DE contributors | Original 3DE isometric application mark | MIT OR Apache-2.0 |
+| static/3de/3de-mark.svg | 3DE contributors | Deployment copy of the original 3DE isometric application mark | MIT OR Apache-2.0 |
+| static/3de/loading-logo.svg | 3DE contributors | Deployment copy of the original animated 3DE loading artwork | MIT OR Apache-2.0 |
+| static/3de/fonts/BIZUDPGothic-Regular.ttf | The BIZ UDGothic Project Authors | Deployment copy of assets/fonts/biz-udp-gothic/BIZUDPGothic-Regular.ttf; licence text included in the deployment fonts directory | SIL OFL 1.1 |
+| static/3de/fonts/CraftUI-SC.otf | Adobe / Google Inc. (Noto Sans SC); SolidCraft subset | Deployment copy of assets/fonts/craft-ui-sc/CraftUI-SC.otf; accompanying OFL included | SIL OFL 1.1 |
+| static/3de/fonts/CraftUI-TC.otf | Adobe / Google Inc. (Noto Sans TC); SolidCraft subset | Deployment copy of assets/fonts/craft-ui-tc/CraftUI-TC.otf; accompanying OFL included | SIL OFL 1.1 |
+| static/3de/icons/32x32/io.tangencylabs.solidcraft.png | SolidCraft contributors | Deployment copy of the generated 32 px application icon | MIT OR Apache-2.0 |
+| static/3de/icons/256x256/io.tangencylabs.solidcraft.png | SolidCraft contributors | Deployment copy of the generated 256 px application icon | MIT OR Apache-2.0 |
+| static/3de/icons/512x512/io.tangencylabs.solidcraft.png | SolidCraft contributors | Deployment copy of the generated 512 px application icon | MIT OR Apache-2.0 |
 | assets/styles/web/loading.css | SolidCraft contributors | Original SolidCraft resource data or drawing code, collected without redesign | MIT OR Apache-2.0 |
 | crates/io/src/native_cad/fixtures/block.FCStd | SolidCraft contributors | original 10 × 20 × 30 mm test box saved by FreeCAD 1.1.4 run as an external program (`make_block_fcstd.py` beside it); no third-party geometry | MIT OR Apache-2.0 |
 | crates/io/src/native_cad/fixtures/block.3dm | SolidCraft contributors | original 10 × 20 × 30 mm test box written with McNeel's MIT-licensed rhino3dm Python package (`make_block_3dm.py` beside it); no third-party geometry | MIT OR Apache-2.0 |

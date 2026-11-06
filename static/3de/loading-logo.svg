@@ -17,14 +17,33 @@
     <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
       <feGaussianBlur stdDeviation="18"/>
     </filter>
+    <style>
+      #cube { transform-box: fill-box; transform-origin: center; animation: cubeFloat 1.8s cubic-bezier(.45,0,.25,1) infinite; }
+      #orbit { transform-origin: 320px 255px; animation: orbitTurn 2.8s linear infinite; }
+      #orbit path { stroke-dasharray: 28 18; animation: orbitDash 1.4s linear infinite; }
+      #shadow { transform-origin: center; animation: shadowPulse 1.8s ease-in-out infinite; }
+      #word { animation: wordGlow 1.8s ease-in-out infinite; }
+      @keyframes cubeFloat { 0%,100% { transform: translateY(6px) scale(.96) } 50% { transform: translateY(-12px) scale(1) } }
+      @keyframes orbitTurn { to { transform: rotate(360deg) } }
+      @keyframes orbitDash { to { stroke-dashoffset: -46 } }
+      @keyframes shadowPulse { 0%,100% { transform: scale(.72); opacity:.08 } 50% { transform: scale(1); opacity:.2 } }
+      @keyframes wordGlow { 0%,100% { opacity:.72 } 50% { opacity:1 } }
+      @media (prefers-reduced-motion: reduce) { #cube,#orbit,#orbit path,#shadow,#word { animation:none } }
+    </style>
   </defs>
-  <ellipse cx="320" cy="378" rx="142" ry="28" fill="#48c9b0" opacity=".13" filter="url(#glow)"/>
-  <g stroke="#070c12" stroke-width="8" stroke-linejoin="round">
-    <path d="M320 76 500 174 320 272 140 174Z" fill="url(#top)"/>
-    <path d="M140 174 320 272 320 454 140 356Z" fill="url(#left)"/>
-    <path d="M320 272 500 174 500 356 320 454Z" fill="url(#right)"/>
+  <ellipse id="shadow" cx="320" cy="398" rx="142" ry="28" fill="#48c9b0" opacity=".13" filter="url(#glow)"/>
+  <g id="orbit" fill="none" stroke="#48c9b0" stroke-width="4" opacity=".62">
+    <path d="M116 255c0-68 91-123 204-123s204 55 204 123-91 123-204 123-204-55-204-123Z"/>
+    <circle cx="116" cy="255" r="8" fill="#b4f6e8" stroke="none"/>
   </g>
-  <path d="M320 116 426 174 320 232 214 174Z" fill="#0b141d" opacity=".92"/>
-  <path d="M320 232v112l74-40v-72l-74 40-74-40v72l74 40" fill="none" stroke="#92efdc" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>
-  <text x="320" y="505" text-anchor="middle" fill="#e5edf4" font-family="system-ui, sans-serif" font-size="58" font-weight="750" letter-spacing="10">3DE</text>
+  <g id="cube">
+    <g stroke="#070c12" stroke-width="8" stroke-linejoin="round">
+      <path d="M320 76 500 174 320 272 140 174Z" fill="url(#top)"/>
+      <path d="M140 174 320 272 320 454 140 356Z" fill="url(#left)"/>
+      <path d="M320 272 500 174 500 356 320 454Z" fill="url(#right)"/>
+    </g>
+    <path d="M320 116 426 174 320 232 214 174Z" fill="#0b141d" opacity=".92"/>
+    <path d="M320 232v112l74-40v-72l-74 40-74-40v72l74 40" fill="none" stroke="#92efdc" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>
+  </g>
+  <text id="word" x="320" y="505" text-anchor="middle" fill="#e5edf4" font-family="system-ui, sans-serif" font-size="58" font-weight="750" letter-spacing="10">3DE</text>
 </svg>

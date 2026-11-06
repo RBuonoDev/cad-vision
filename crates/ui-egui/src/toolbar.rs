@@ -447,7 +447,7 @@ pub fn app_bar(app: &mut SolveApp, ui: &mut egui::Ui) {
         let file = {
             let label = app.tr("ui.file").to_string();
             let galley = ui.painter().layout_no_wrap(label.clone(), FontId::proportional(t.font_button), t.app_bar_text);
-            let br = Rect::from_min_size(pos2(x - 13.0, r.center().y - 13.0), vec2(galley.size().x + 16.0, 26.0));
+            let br = Rect::from_min_size(pos2(x - 13.0, r.center().y - 13.0), vec2(galley.size().x + 36.0, 26.0));
             x = br.right() + 17.0;
             let resp = ui.interact(br, ui.scope_id().with(("ab", "file")), if idle { Sense::click() } else { Sense::hover() });
             resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, idle, &label));
@@ -458,7 +458,13 @@ pub fn app_bar(app: &mut SolveApp, ui: &mut egui::Ui) {
                 ui.painter().rect_filled(br, t.radius_sm, t.app_bar_hover);
             }
             let ink = if idle { t.app_bar_text } else { t.app_bar_text.gamma_multiply(0.35) };
-            ui.painter().galley(pos2(br.left() + 8.0, br.center().y - galley.size().y / 2.0), galley, ink);
+            icons::paint_app_bar(
+                ui.painter(),
+                Rect::from_center_size(pos2(br.left() + 12.0, br.center().y), vec2(16.0, 16.0)),
+                "open",
+                if idle { 1.0 } else { 0.35 },
+            );
+            ui.painter().galley(pos2(br.left() + 25.0, br.center().y - galley.size().y / 2.0), galley, ink);
             ui.ctx().data_mut(|d| d.insert_temp(egui::Id::unique("sc_file_menu_x"), br.left()));
             idle && resp.clicked()
         };
@@ -518,13 +524,13 @@ pub fn app_bar(app: &mut SolveApp, ui: &mut egui::Ui) {
         let separator_x = x - step + if compact_actions { 19.0 } else { 24.0 };
         app_bar_separator(ui, r, separator_x, "documents");
         let tabs_start = separator_x + 10.0;
-        let report_text = crate::i18n::tr("ui.report_a_bug");
-        let report_font = FontId::proportional(t.font_button);
-        let label_width = ui.painter().layout_no_wrap(report_text.to_string(), report_font.clone(), t.app_bar_text).size().x;
-        // The version links to its release notes; measured here so Report a bug leaves it room.
+        // The version links to its release notes. The 3DE header deliberately omits the upstream
+        // bug-report shortcut; support remains available through Help without crowding the CAD.
         let version =
             ui.painter().layout_no_wrap(format!("v{}", crate::update::current_version()), FontId::proportional(t.font_small), t.app_bar_text);
-        let (report, report_label) = report_rect(r, captions, tabs_start, label_width, version.size().x, app.header);
+        let version_space = if app.header.version == VersionPlace::Header { version_room(r, captions, tabs_start, version.size().x) } else { None };
+        let cluster_right = r.right() - captions - version_space.unwrap_or(8.0);
+        let report = Rect::from_center_size(pos2(cluster_right, r.center().y), vec2(0.0, 0.0));
         // Settings' left edge; command search, when the bar holds it, sits just before it and
         // moves the assistant button and the end of the document tabs left by its width.
         let gear_left = report.left() - 68.0;
@@ -536,7 +542,7 @@ pub fn app_bar(app: &mut SolveApp, ui: &mut egui::Ui) {
             ui.ctx().data_mut(|d| d.insert_temp(egui::Id::unique("sc_ribbon_search"), search));
             crate::scenario::publish_target("titlebar:search", search);
         }
-        // Assistant, Settings, Help and Report a bug form the right-hand cluster.
+        // Assistant, Settings and Help form the compact right-hand cluster.
         if click(ui, help_x(report), "help", app.tr("ui.help"), true) {
             app.help.menu = !app.help.menu;
             let at = help_x(report);
@@ -549,8 +555,7 @@ pub fn app_bar(app: &mut SolveApp, ui: &mut egui::Ui) {
         // the bar's own file actions on the left.
         let controls_left = report.left() - CLUSTER_BUTTONS - search_shift;
         let span = Rect::from_min_max(pos2(x, report.top()), pos2(controls_left - 2.0, report.bottom()));
-        // Labelled where Report a bug is (an icon-only Report a bug leaves the pill to fit by room).
-        let update_labeled = report_label || (app.header.report == ReportButton::Icon && r.width() >= 640.0);
+        let update_labeled = r.width() >= 640.0;
         let update = crate::update::button(app, ui, span, update_labeled);
         let tabs_end = update.map_or(controls_left, |u| u.left()) - 8.0;
         // Narrow title bars can fit only part of the tab strip. Its hit regions must not
@@ -559,36 +564,6 @@ pub fn app_bar(app: &mut SolveApp, ui: &mut egui::Ui) {
         let mut tabs_ui = ui.new_child(egui::UiBuilder::new().max_rect(tabs_rect));
         tabs_ui.set_clip_rect(tabs_rect.intersect(ui.clip_rect()));
         crate::documents::tabs(app, &mut tabs_ui, r, tabs_start, tabs_end);
-        let response = ui.interact(report, ui.scope_id().with("sc_report_button"), Sense::click());
-        response.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, ui.is_enabled(), report_text));
-        crate::scenario::publish_target("titlebar:report", report);
-        let hot = response.hovered() || response.has_focus();
-        let tip = if app.header.report == ReportButton::Icon {
-            // Drawn like Settings and Help beside it.
-            if hot {
-                ui.painter().rect_filled(report.shrink(3.0), t.radius_sm, t.app_bar_hover_button);
-            }
-            icons::paint_app_bar(ui.painter(), report.shrink(7.0), "bug_report", 1.0);
-            report_text
-        } else {
-            ui.painter().rect_filled(report, t.radius_sm, if hot { t.app_bar_hover_button } else { t.app_bar });
-            ui.painter().rect_stroke(report, t.radius_sm, Stroke::new(1.0, t.app_bar_separator), egui::StrokeKind::Inside);
-            let icon = Rect::from_center_size(pos2(report.left() + 14.0, report.center().y), vec2(18.0, 18.0));
-            icons::paint_app_bar(ui.painter(), icon, "bug_report", 1.0);
-            if report_label {
-                ui.painter().text(
-                    pos2(report.left() + REPORT_TEXT_X, report.center().y),
-                    Align2::LEFT_CENTER,
-                    report_text,
-                    report_font,
-                    t.app_bar_text,
-                );
-            }
-            crate::i18n::tr_label("Report a bug — review a screenshot and open a GitHub draft")
-        };
-        if response.backing_on_hover_text(tip).clicked() {
-            crate::help::run(app, &ui.ctx().clone(), "report");
-        }
         // Settings sits immediately left of Help (also Ctrl+,).
         let gear = Rect::from_center_size(pos2(report.left() - 52.0, r.center().y), vec2(32.0, 32.0));
         let gresp = ui.interact(gear, ui.scope_id().with("sc_prefs_button"), Sense::click());

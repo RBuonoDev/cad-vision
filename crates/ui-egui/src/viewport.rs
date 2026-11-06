@@ -6814,7 +6814,14 @@ fn points_2d(app: &SolveApp, painter: &egui::Painter, proj: &Proj) {
         && !origin_hidden_by_body(app, proj)
         && let Some(o) = proj.to_screen(Vec3::ZERO)
     {
-        painter.circle(o, 4.5, t.origin_point, Stroke::new(1.0, Color32::from_gray(110)));
+        // 3DE origin beacon: an open halo and a compact diamond remain readable over all three
+        // reference planes without looking like another selectable square face.
+        painter.circle_stroke(o, 7.0, Stroke::new(1.2, t.origin_point.gamma_multiply(0.62)));
+        painter.add(egui::Shape::convex_polygon(
+            vec![o + vec2(0.0, -4.5), o + vec2(4.5, 0.0), o + vec2(0.0, 4.5), o + vec2(-4.5, 0.0)],
+            t.origin_point,
+            Stroke::new(1.0, Tokens::get().viewport_bottom),
+        ));
     }
     for x in app.highlighted() {
         if let Sel::Vertex { point, .. } = x

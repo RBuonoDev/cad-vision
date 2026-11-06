@@ -407,7 +407,11 @@ impl Tokens {
         t.timeline = Color32::from_rgb(10, 17, 25);
         t.hover = Color32::from_rgb(31, 48, 63);
         t.hover_edge_halo = Color32::from_rgb(203, 203, 203);
-        t.origin_point = Color32::from_rgb(214, 215, 218);
+        // 3DE reference geometry: quiet glass planes around a bright turquoise origin beacon.
+        t.origin_plane = Color32::from_rgba_unmultiplied_const(72, 201, 176, 26);
+        t.origin_plane_edge = Color32::from_rgba_unmultiplied_const(72, 201, 176, 156);
+        t.origin_plane_hover = Color32::from_rgba_unmultiplied_const(180, 246, 232, 104);
+        t.origin_point = Color32::from_rgb(180, 246, 232);
         t.joint_axis = Color32::from_rgb(110, 240, 250);
         t.viewport_top = Color32::from_rgb(19, 31, 43);
         t.viewport_bottom = Color32::from_rgb(13, 23, 34);

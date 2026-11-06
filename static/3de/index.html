@@ -15,26 +15,16 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="3DE — Estúdio CAD">
   <meta name="twitter:description" content="CAD paramétrico para modelagem 3D no navegador.">
-  
+
 <script type="module">
-import init, * as bindings from './solidcraft-web-b255f1e00123e9da.js';
-try {
-const compressed = await fetch('./engine.wasm.gz');
-if (!compressed.ok) throw new Error(`Falha ao carregar o motor 3DE (${compressed.status})`);
-const stream = compressed.body.pipeThrough(new DecompressionStream('gzip'));
-const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
-const wasm = await init({ module_or_path: bytes });
+import init, * as bindings from './solidcraft-web-c54f403f518443e7.js';
+const wasm = await init({ module_or_path: './solidcraft-web-64b108d4442ff35d_bg.wasm' });
 
 
 window.wasmBindings = bindings;
 
 
 dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
-} catch (error) {
-  console.error(error);
-  const loading = document.getElementById('solidcraft_loading');
-  if (loading) loading.textContent = `Falha ao iniciar o 3DE: ${error.message}`;
-}
 
 </script>
   
@@ -48,13 +38,14 @@ dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
   <!-- Installable as an app (manifest.webmanifest); the icons are the Linux exports of the app mark. -->
   <meta name="theme-color" content="#070c12">
   <link rel="manifest" href="manifest.webmanifest">
+
   <link rel="icon" type="image/svg+xml" href="3de-mark.svg">
   
   
   
   
   
-<link rel="modulepreload" href="./solidcraft-web-b255f1e00123e9da.js" crossorigin="anonymous" integrity="sha384-01NC/VQzevyETOxWHK5z2Xb4az9D5V0XPROufeqrWt/3H/7UdVfEutqNBYO9tqyV"></head>
+<link rel="modulepreload" href="./solidcraft-web-c54f403f518443e7.js" crossorigin="anonymous" integrity="sha384-Da61LigdlUo4Uty7ByrAngNpbd2c0msl7IHkHYLt+uGjy1L0p4yQ1ZO3T8oBqg0F"><link rel="preload" href="./solidcraft-web-64b108d4442ff35d_bg.wasm" crossorigin="anonymous" integrity="sha384-OrDqvAEyR1tl+85yKKYMhPrW3yPkzoYvWcdhqZtTxdQ3kW93t0BHHhSiw6y6Xmwn" as="fetch" type="application/wasm"></head>
 <body>
   <canvas id="solidcraft_canvas"></canvas>
   <div id="solidcraft_loading" role="status"><img src="loading-logo.svg" alt=""><span class="sr-only">Carregando o 3DE&hellip;</span></div>

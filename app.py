@@ -14,11 +14,11 @@ st.markdown(
     [data-testid="stStatusWidget"], footer { display: none !important; }
     .block-container { max-width: none !important; padding: 0 !important; }
     [data-testid="stElementContainer"]:has(iframe) {
-        width: 100vw !important; max-width: none !important;
+        width: 100% !important; max-width: none !important;
     }
     iframe {
-        display: block; border: 0; width: 100vw !important;
-        min-width: 100vw !important;
+        display: block; border: 0; width: 100% !important;
+        min-width: 0 !important; margin: 0 auto;
     }
     </style>
     """,
@@ -27,15 +27,28 @@ st.markdown(
 
 static_dir = Path(__file__).parent / "static" / "3de"
 document = (static_dir / "index.html").read_text(encoding="utf-8")
-runtime = (static_dir / "solidcraft-web-b255f1e00123e9da.js").read_text(encoding="utf-8")
-styles = (static_dir / "loading-b2ddd872f1c0a1e5.css").read_text(encoding="utf-8")
+runtime_path = next(static_dir.glob("solidcraft-web-*.js"))
+styles_path = next(static_dir.glob("loading-*.css"))
+runtime = runtime_path.read_text(encoding="utf-8")
+styles = styles_path.read_text(encoding="utf-8")
 module_start = document.index('<script type="module">') + len('<script type="module">')
 module_end = document.index("</script>", module_start)
 loader = document[module_start:module_end]
 loader = loader.replace(
-    "import init, * as bindings from './solidcraft-web-b255f1e00123e9da.js';",
+    f"import init, * as bindings from './{runtime_path.name}';",
     runtime + "\nconst init = __wbg_init; const bindings = {};",
 )
+loader = re.sub(
+    r"const wasm = await init\(\{ module_or_path: '[^']+\.wasm' \}\);",
+    """const compressed = await fetch('./engine.wasm.gz');
+if (!compressed.ok || !compressed.body) throw new Error('Não foi possível carregar o motor 3D.');
+const stream = compressed.body.pipeThrough(new DecompressionStream('gzip'));
+const wasmResponse = new Response(stream, {headers: {'Content-Type': 'application/wasm'}});
+const initializedWasm = await init({ module_or_path: wasmResponse });""",
+    loader,
+    count=1,
+)
+loader = loader.replace("{detail: {wasm}}", "{detail: {wasm: initializedWasm}}")
 document = document[:module_start] + loader + document[module_end:]
 document = re.sub(
     r'<link rel="stylesheet" href="\./loading-[^"]+\.css"[^>]*>',
@@ -44,4 +57,5 @@ document = re.sub(
     count=1,
 )
 document = document.replace("<head>", '<head><base href="app/static/3de/">', 1)
-st.components.v1.html(document, width=1920, height=920, scrolling=False)
+document = re.sub(r'<link rel="preload" href="[^\"]+\.wasm"[^>]*>', "", document)
+st.components.v1.html(document, height=920, scrolling=False)
