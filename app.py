@@ -29,5 +29,5 @@ loader = loader.replace(
     runtime + "\nconst init = __wbg_init; const bindings = {};",
 )
 document = document[:module_start] + loader + document[module_end:]
-document = document.replace("<head>", '<head><base href="/app/static/3de/">', 1)
+document = document.replace("<head>", '<head><base href="app/static/3de/">', 1)
 st.components.v1.html(document, width=1920, height=920, scrolling=False)
