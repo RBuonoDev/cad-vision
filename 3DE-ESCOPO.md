@@ -21,13 +21,14 @@ O 3DE é uma implementação independente de CAD paramétrico. Não é o SolidWo
 | Paralelismo, perpendicularidade, igualdade | Implementado entre segmentos de linha |
 | Estado de definição / conflito de relações | Implementado por solucionador numérico limitado; conflitos detectados preservam a última peça aplicada |
 | Extrusão, corte, profundidade simétrica, atravessar tudo | Implementado |
+| Filete e chanfro | Implementados para todas as arestas, arestas paralelas a X/Y/Z ou arestas da face superior/inferior; sem seleção individual no visualizador |
 | XY/XZ/YZ e referências aos limites do sólido | Implementado; não é seleção associativa de faces |
 | Histórico, edição, supressão, reordenação, desfazer/refazer | Implementado |
 | STEP/STL e projeto JSON com relações | Implementado |
 | Arcos, splines, tangência, geometria de construção | Não implementado |
 | Recortar/estender, múltiplos contornos por esboço, seleção de regiões | Não implementado |
 | Revolução, varredura, loft, padrões, espelho, casca | Não implementado |
-| Filetes/chanfros com seleção de arestas | Não implementado |
+| Seleção individual de arestas no visualizador para filete/chanfro | Não implementado |
 | Montagens, posicionamentos e detecção de interferência | Não implementado |
 | Desenhos técnicos associativos, cortes, tolerâncias, lista de materiais | Não implementado |
 | Chapa metálica, estruturas soldadas, moldes, superfícies avançadas | Não implementado |

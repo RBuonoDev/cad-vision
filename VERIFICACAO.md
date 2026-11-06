@@ -21,3 +21,10 @@ Esses testes verificam este protótipo e não demonstram equivalência completa 
 - Alteração de comprimento de 80 para 100 mm preservou sete relações e regenerou um sólido de 100.000 mm³.
 - Relações preservadas ao salvar/reabrir o JSON.
 - Testes anteriores de geometria, planos, cortes, exportação, compatibilidade, histórico e recuperação após erro continuam passando.
+
+## Filete e chanfro
+
+- Validação local de raio/distância e seleção de arestas: aprovada.
+- Projetos JSON versões 1, 2 e 3 continuam sendo lidos; novos projetos usam a versão 4.
+- Sintaxe Python de app.py e engine.py: verificada.
+- O teste de geometria com CadQuery (volume após filete/chanfro e falha de raio excessivo) está incluído em `tests/test_edge_features.py`; precisa ser executado em um ambiente com CadQuery instalado. Esta verificação local não certifica o resultado geométrico.
