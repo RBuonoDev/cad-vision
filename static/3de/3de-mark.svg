@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">3DE</title>
+  <desc id="desc">Marca 3DE em forma de cubo isométrico</desc>
+  <defs>
+    <linearGradient id="top" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#b4f6e8"/>
+      <stop offset="1" stop-color="#48c9b0"/>
+    </linearGradient>
+    <linearGradient id="left" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#48c9b0"/>
+      <stop offset="1" stop-color="#197c76"/>
+    </linearGradient>
+    <linearGradient id="right" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#2b91b1"/>
+      <stop offset="1" stop-color="#164442"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="28" fill="#070c12"/>
+  <path d="M64 19 104 41 64 64 24 41Z" fill="url(#top)"/>
+  <path d="M24 41 64 64v45L24 86Z" fill="url(#left)"/>
+  <path d="M104 41 64 64v45l40-23Z" fill="url(#right)"/>
+  <path d="M64 64v45M24 41l40 23 40-23" fill="none" stroke="#070c12" stroke-width="4" stroke-linejoin="round"/>
+</svg>

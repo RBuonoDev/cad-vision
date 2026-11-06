@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <title>3DE — Estúdio CAD</title>
+  <meta name="description" content="3DE, um estúdio CAD paramétrico para modelagem 3D no navegador.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="3DE">
+  <meta property="og:title" content="3DE — Estúdio CAD">
+  <meta property="og:description" content="CAD paramétrico para modelagem 3D no navegador.">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="640">
+  <meta property="og:image:alt" content="3DE — Estúdio CAD paramétrico">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="3DE — Estúdio CAD">
+  <meta name="twitter:description" content="CAD paramétrico para modelagem 3D no navegador.">
+  
+<script type="module">
+import init, * as bindings from './solidcraft-web-b255f1e00123e9da.js';
+try {
+const compressed = await fetch('./engine.wasm.gz');
+if (!compressed.ok) throw new Error(`Falha ao carregar o motor 3DE (${compressed.status})`);
+const stream = compressed.body.pipeThrough(new DecompressionStream('gzip'));
+const bytes = new Uint8Array(await new Response(stream).arrayBuffer());
+const wasm = await init({ module_or_path: bytes });
+
+
+window.wasmBindings = bindings;
+
+
+dispatchEvent(new CustomEvent("TrunkApplicationStarted", {detail: {wasm}}));
+} catch (error) {
+  console.error(error);
+  const loading = document.getElementById('solidcraft_loading');
+  if (loading) loading.textContent = `Falha ao iniciar o 3DE: ${error.message}`;
+}
+
+</script>
+  
+  
+  
+  
+  
+  
+  <link rel="stylesheet" href="./loading-b2ddd872f1c0a1e5.css" integrity="sha384-kKGafrPgjvTHhxlUgiKfzi0InF96WI2Vxooqj73uoWlWXhy3iMONvu7dCwW8ti7A"/>
+  
+  <!-- Installable as an app (manifest.webmanifest); the icons are the Linux exports of the app mark. -->
+  <meta name="theme-color" content="#070c12">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/svg+xml" href="3de-mark.svg">
+  
+  
+  
+  
+  
+<link rel="modulepreload" href="./solidcraft-web-b255f1e00123e9da.js" crossorigin="anonymous" integrity="sha384-01NC/VQzevyETOxWHK5z2Xb4az9D5V0XPROufeqrWt/3H/7UdVfEutqNBYO9tqyV"></head>
+<body>
+  <canvas id="solidcraft_canvas"></canvas>
+  <div id="solidcraft_loading" role="status"><img src="loading-logo.svg" alt=""><span class="sr-only">Carregando o 3DE&hellip;</span></div>
+  <script>
+    // Offline use and updates (sw.js; written into release builds by `cargo xtask web-offline`).
+    if ("serviceWorker" in navigator) {
+      addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+    }
+    // Install as an app: the browser's offer can come before the app runs, so it is kept here for
+    // the app's File ▸ Install app… item (src/install.rs). Installed, the browser makes no more offers.
+    addEventListener("beforeinstallprompt", (e) => { e.preventDefault(); window.solidcraftInstall = e; });
+    addEventListener("appinstalled", () => { window.solidcraftInstall = null; });
+  </script>
+</body>
+</html>

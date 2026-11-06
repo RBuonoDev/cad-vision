@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 520" role="img" aria-labelledby="title desc">
+  <title id="title">3DE</title>
+  <desc id="desc">Marca 3DE formada por um cubo isométrico turquesa.</desc>
+  <defs>
+    <linearGradient id="top" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#b5fff0"/>
+      <stop offset="1" stop-color="#48c9b0"/>
+    </linearGradient>
+    <linearGradient id="left" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#36ad9b"/>
+      <stop offset="1" stop-color="#18766e"/>
+    </linearGradient>
+    <linearGradient id="right" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#238d83"/>
+      <stop offset="1" stop-color="#10524e"/>
+    </linearGradient>
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="18"/>
+    </filter>
+  </defs>
+  <ellipse cx="320" cy="378" rx="142" ry="28" fill="#48c9b0" opacity=".13" filter="url(#glow)"/>
+  <g stroke="#070c12" stroke-width="8" stroke-linejoin="round">
+    <path d="M320 76 500 174 320 272 140 174Z" fill="url(#top)"/>
+    <path d="M140 174 320 272 320 454 140 356Z" fill="url(#left)"/>
+    <path d="M320 272 500 174 500 356 320 454Z" fill="url(#right)"/>
+  </g>
+  <path d="M320 116 426 174 320 232 214 174Z" fill="#0b141d" opacity=".92"/>
+  <path d="M320 232v112l74-40v-72l-74 40-74-40v72l74 40" fill="none" stroke="#92efdc" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>
+  <text x="320" y="505" text-anchor="middle" fill="#e5edf4" font-family="system-ui, sans-serif" font-size="58" font-weight="750" letter-spacing="10">3DE</text>
+</svg>
