@@ -43,6 +43,8 @@ for k,v in dict(features=[], revision=0, selected=-1, draft=None,
                 undo=[], redo=[], sketch_nonce=None, notice=None).items():
     st.session_state.setdefault(k,v)
 s = st.session_state
+if 'workspace_next' in s:
+    s.workspace_mode=s.pop('workspace_next')
 
 def select(index):
     s.selected=index
@@ -76,6 +78,7 @@ def prepare(kind):
         enabled=True,plane='XY',direction=-1 if cut else 1,extent='through' if kind=='hole' else 'blind',
         placement='max' if has_body else 'absolute',points=[] if kind=='polygon' else [[-20,-15],[20,-15],[20,15],[-20,15]],constraints=[])
     if kind=='pocket':s.draft.update(length=20,width=15,depth=5)
+    s.workspace_mode='Esboço 2D' if kind=='polygon' else 'Peça 3D'
 
 with st.sidebar:
     st.markdown('### Seu projeto')
@@ -242,8 +245,8 @@ with inspector:
                 try:commit(features[:idx]+features[idx+1:],-1);st.rerun()
                 except (ValueError,RuntimeError) as exc:st.error(str(exc))
 with workspace:
-    model_tab,sketch_tab=st.tabs(['Peça 3D','Esboço 2D'])
-    with model_tab:
+    area=st.radio('Área de trabalho',['Peça 3D','Esboço 2D'],horizontal=True,key='workspace_mode')
+    if area=='Peça 3D':
         try:
             result=compile_project(dumps(features))
             if result['mesh']:
@@ -266,7 +269,7 @@ with workspace:
             b.download_button('Exportar STEP',result['step'] or b'','peca.step','application/octet-stream',disabled=result['step'] is None,width='stretch')
             c.download_button('Exportar STL',result['stl'] or b'','peca.stl','application/octet-stream',disabled=result['stl'] is None,width='stretch')
         except (ValueError,RuntimeError) as exc:st.error(str(exc))
-    with sketch_tab:
+    if area=='Esboço 2D':
         if operation in ('Filete','Chanfro'):
             st.info('Esta operação atua nas arestas do sólido. Escolha as arestas e o tamanho no painel à esquerda.')
         else:
@@ -278,11 +281,26 @@ with workspace:
                 if value.get('profile')==profile:
                     for field in ('x','y','length','width','diameter','points','constraints'):
                         if field in value:s.draft[field]=value[field]
-                    s.revision+=1
-                    st.rerun()
+                    if value.get('action') in ('extrude','cut'):
+                        try:
+                            feature=copy.deepcopy(s.draft)
+                            feature.update(operation='add' if value['action']=='extrude' else 'cut',
+                                           depth=value.get('depth',feature['depth']),
+                                           direction=1 if value['action']=='extrude' else -1,extent='blind')
+                            candidate=copy.deepcopy(features)
+                            if idx is None:candidate.append(feature)
+                            else:candidate[idx]=feature
+                            commit(candidate,idx if idx is not None else len(candidate)-1)
+                            s.workspace_next='Peça 3D'
+                            st.rerun()
+                        except (ValueError,RuntimeError) as exc:
+                            st.error(str(exc))
+                            st.caption('A peça anterior foi preservada. Revise o contorno, o plano e a profundidade.')
+                    else:
+                        s.revision+=1
+                        st.rerun()
             st.caption('Contorno: desenhe linhas e feche no primeiro vértice. Selecione segmentos ou vértices para cotar e relacionar; Ctrl seleciona dois. Verde indica totalmente definido. O botão Usar este esboço preserva as relações no projeto.')
     with st.expander('Como trabalhar'):
         st.write('1. Escolha uma operação no histórico ou crie uma nova. 2. Para adição e corte, defina o plano, o esboço e a profundidade. Para filete e chanfro, selecione um grupo de arestas e informe o tamanho. 3. Aplique a operação. Um erro mantém a última peça válida. Desfazer/Refazer atua nas alterações aplicadas, durante esta sessão.')
         st.caption('Versão em desenvolvimento: um sólido conectado, perfis fechados e relações entre linhas. Filete e chanfro selecionam grupos de arestas, ainda sem seleção individual no visualizador. Montagens, simulação e importação SLDPRT não estão disponíveis. Salve o JSON antes de sair; STEP exporta a geometria e STL a malha em mm.')
-
 

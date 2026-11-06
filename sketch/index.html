@@ -7,5 +7,6 @@
 <div class="tools"><button data-kind="horizontal">Horizontal</button><button data-kind="vertical">Vertical</button><button id="fix">Fixar vértice</button><label>Comprimento <input id="length" aria-label="Comprimento do segmento em mm" type="number" min="0.1" max="10000" step="0.1" value="20"></label><button data-kind="length">Cotar</button></div>
 <div class="tools"><button data-kind="parallel">Paralelos</button><button data-kind="perpendicular">Perpendiculares</button><button data-kind="equal">Iguais</button><label>Distância <input id="distance" aria-label="Distância entre vértices em mm" type="number" min="-10000" max="10000" value="20"></label><button data-kind="dx">ΔU</button><button data-kind="dy">ΔV</button></div>
 <div id="list"></div></section>
-<div class="tools"><button class="primary" id="apply">Usar este esboço</button><span id="summary" role="status"></span></div><div id="error" role="alert"></div><div id="hint"></div>
+<div class="tools"><label>Profundidade <input id="depth3d" aria-label="Profundidade da operação 3D em mm" type="number" min="0.1" max="10000" step="1" value="10"> mm</label><button class="primary" id="extrude3d">Extrudar em 3D</button><button id="cut3d">Cortar em 3D</button></div>
+<div class="tools"><button id="apply">Salvar esboço no painel</button><span id="summary" role="status"></span></div><div id="error" role="alert"></div><div id="hint"></div>
 <script src="editor.js"></script></html>
