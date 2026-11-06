@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 import streamlit as st
 
@@ -27,6 +28,7 @@ st.markdown(
 static_dir = Path(__file__).parent / "static" / "3de"
 document = (static_dir / "index.html").read_text(encoding="utf-8")
 runtime = (static_dir / "solidcraft-web-b255f1e00123e9da.js").read_text(encoding="utf-8")
+styles = (static_dir / "loading-b2ddd872f1c0a1e5.css").read_text(encoding="utf-8")
 module_start = document.index('<script type="module">') + len('<script type="module">')
 module_end = document.index("</script>", module_start)
 loader = document[module_start:module_end]
@@ -35,5 +37,11 @@ loader = loader.replace(
     runtime + "\nconst init = __wbg_init; const bindings = {};",
 )
 document = document[:module_start] + loader + document[module_end:]
+document = re.sub(
+    r'<link rel="stylesheet" href="\./loading-[^"]+\.css"[^>]*>',
+    f"<style>{styles}</style>",
+    document,
+    count=1,
+)
 document = document.replace("<head>", '<head><base href="app/static/3de/">', 1)
 st.components.v1.html(document, width=1920, height=920, scrolling=False)
