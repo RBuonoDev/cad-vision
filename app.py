@@ -9,16 +9,22 @@ st.set_page_config(page_title="3DE — Estúdio CAD", page_icon="🧊", layout="
 st.markdown(
     """
     <style>
-    html, body, [data-testid="stAppViewContainer"], .stApp { background: #070c12; }
+    html, body, [data-testid="stAppViewContainer"], .stApp {
+        background: #070c12; height: 100vh !important; overflow: hidden !important;
+    }
     [data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecoration"],
     [data-testid="stStatusWidget"], footer { display: none !important; }
-    .block-container { max-width: none !important; padding: 0 !important; }
+    .block-container {
+        max-width: none !important; padding: 0 !important;
+        height: 100vh !important; overflow: hidden !important;
+    }
     [data-testid="stElementContainer"]:has(iframe) {
         width: 100% !important; max-width: none !important;
+        height: 100vh !important; overflow: hidden !important;
     }
     iframe {
         display: block; border: 0; width: 100% !important;
-        min-width: 0 !important; margin: 0 auto;
+        min-width: 0 !important; margin: 0 auto; height: 100vh !important;
     }
     </style>
     """,
@@ -31,6 +37,7 @@ runtime_path = next(static_dir.glob("solidcraft-web-*.js"))
 styles_path = next(static_dir.glob("loading-*.css"))
 runtime = runtime_path.read_text(encoding="utf-8")
 styles = styles_path.read_text(encoding="utf-8")
+loading_logo = (static_dir / "loading-logo.svg").read_text(encoding="utf-8")
 build_id = runtime_path.stem.rsplit("-", 1)[-1]
 module_start = document.index('<script type="module">') + len('<script type="module">')
 module_end = document.index("</script>", module_start)
@@ -65,9 +72,29 @@ document = re.sub(
     document,
     count=1,
 )
+document = document.replace('<img src="loading-logo.svg" alt="">', loading_logo, 1)
 document = document.replace("<head>", '<head><base href="app/static/3de/">', 1)
 document = re.sub(r'<link rel="preload" href="[^\"]+\.wasm"[^>]*>', "", document)
 # Streamlit already owns online updates. A nested service worker would keep an obsolete CAD
 # engine after deployment, so the embedded app always loads the build identified above.
 document = document.replace('if ("serviceWorker" in navigator)', 'if (false && "serviceWorker" in navigator)')
-st.components.v1.html(document, height=920, scrolling=False)
+document = document.replace(
+    "</body>",
+    """<script>
+    const fit3DEToWindow = () => {
+      const height = Math.max(560, window.parent.innerHeight || 800);
+      document.documentElement.style.height = `${height}px`;
+      document.body.style.height = `${height}px`;
+      try {
+        const frame = window.frameElement;
+        if (frame) frame.style.setProperty('height', `${height}px`, 'important');
+        window.parent.document.documentElement.style.overflow = 'hidden';
+        window.parent.document.body.style.overflow = 'hidden';
+      } catch (_) {}
+    };
+    fit3DEToWindow();
+    window.parent.addEventListener('resize', fit3DEToWindow);
+    </script></body>""",
+    1,
+)
+st.components.v1.html(document, height=800, scrolling=False)

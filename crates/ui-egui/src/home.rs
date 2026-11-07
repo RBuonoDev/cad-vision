@@ -1112,13 +1112,35 @@ fn dispatch(app: &mut SolveApp, ctx: &egui::Context, action: FileAction) {
                 );
                 if let Ok(result) = traced {
                     app.home.open = false;
-                    let _ = app.run("view.fit", serde_json::json!({}));
                     let curves = result.get("curves").and_then(serde_json::Value::as_u64).unwrap_or(0);
                     let outlines = result.get("outlines").and_then(serde_json::Value::as_u64).unwrap_or(0);
-                    app.set_status(
-                        format!("Desenho reconhecido: {outlines} contorno(s) e {curves} elemento(s). Confira as cotas e ajuste a escala antes de extrudar."),
-                        false,
-                    );
+                    let sketch = result.get("sketch").and_then(serde_json::Value::as_u64);
+                    let solid = sketch.filter(|_| outlines > 0).and_then(|sketch| {
+                        app.run(
+                            "solid.extrude",
+                            serde_json::json!({
+                                "sketch": sketch,
+                                "distance": "10 mm",
+                                "operation": "new",
+                                "name": format!("Espessura — {name}"),
+                                "body_name": format!("Peça — {name}"),
+                            }),
+                        )
+                        .ok()
+                    });
+                    let _ = app.run("view.fit", serde_json::json!({}));
+                    if let Some(feature) = solid.as_ref().and_then(|value| value.get("feature")).and_then(serde_json::Value::as_u64) {
+                        app.edit_feature(feature);
+                        app.set_status(
+                            format!("Peça criada a partir de {outlines} contorno(s). Ajuste a cota de espessura e confirme; o esboço continua editável no Navegador."),
+                            false,
+                        );
+                    } else {
+                        app.set_status(
+                            format!("Foram reconhecidos {outlines} contorno(s) e {curves} elemento(s). O esboço ficou pronto para revisar as cotas; não foi possível criar um sólido fechado automaticamente."),
+                            false,
+                        );
+                    }
                 }
             });
         }

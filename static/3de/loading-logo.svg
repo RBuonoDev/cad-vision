@@ -1,49 +1,37 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 520" role="img" aria-labelledby="title desc">
   <title id="title">3DE</title>
-  <desc id="desc">Marca 3DE formada por um cubo isométrico turquesa.</desc>
+  <desc id="desc">Um desenho técnico dobra-se como um avião de papel e transforma-se em uma peça 3D.</desc>
   <defs>
-    <linearGradient id="top" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#b5fff0"/>
-      <stop offset="1" stop-color="#48c9b0"/>
-    </linearGradient>
-    <linearGradient id="left" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#36ad9b"/>
-      <stop offset="1" stop-color="#18766e"/>
-    </linearGradient>
-    <linearGradient id="right" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#238d83"/>
-      <stop offset="1" stop-color="#10524e"/>
-    </linearGradient>
-    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
-      <feGaussianBlur stdDeviation="18"/>
-    </filter>
+    <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f4fbff"/><stop offset="1" stop-color="#9bd9dc"/></linearGradient>
+    <linearGradient id="top" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#b5fff0"/><stop offset="1" stop-color="#48c9b0"/></linearGradient>
+    <linearGradient id="left" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#36ad9b"/><stop offset="1" stop-color="#18766e"/></linearGradient>
+    <linearGradient id="right" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#238d83"/><stop offset="1" stop-color="#10524e"/></linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="18"/></filter>
     <style>
-      #cube { transform-box: fill-box; transform-origin: center; animation: cubeFloat 1.8s cubic-bezier(.45,0,.25,1) infinite; }
-      #orbit { transform-origin: 320px 255px; animation: orbitTurn 2.8s linear infinite; }
-      #orbit path { stroke-dasharray: 28 18; animation: orbitDash 1.4s linear infinite; }
-      #shadow { transform-origin: center; animation: shadowPulse 1.8s ease-in-out infinite; }
-      #word { animation: wordGlow 1.8s ease-in-out infinite; }
-      @keyframes cubeFloat { 0%,100% { transform: translateY(6px) scale(.96) } 50% { transform: translateY(-12px) scale(1) } }
-      @keyframes orbitTurn { to { transform: rotate(360deg) } }
-      @keyframes orbitDash { to { stroke-dashoffset: -46 } }
-      @keyframes shadowPulse { 0%,100% { transform: scale(.72); opacity:.08 } 50% { transform: scale(1); opacity:.2 } }
-      @keyframes wordGlow { 0%,100% { opacity:.72 } 50% { opacity:1 } }
-      @media (prefers-reduced-motion: reduce) { #cube,#orbit,#orbit path,#shadow,#word { animation:none } }
+      #sheet { transform-origin:320px 245px; animation:sheet 3.2s ease-in-out infinite; }
+      #plane { transform-origin:320px 250px; animation:plane 3.2s ease-in-out infinite; }
+      #part { transform-origin:320px 255px; animation:part 3.2s cubic-bezier(.2,.8,.2,1) infinite; }
+      #scan { animation:scan 1.05s linear infinite; }
+      #shadow { transform-origin:center; animation:shadow 3.2s ease-in-out infinite; }
+      @keyframes sheet { 0%,20%{opacity:1;transform:translateY(0) rotate(0) scale(1)} 34%,100%{opacity:0;transform:translateY(-8px) rotate(-5deg) scale(.72,.08)} }
+      @keyframes plane { 0%,22%{opacity:0;transform:scale(.65) rotate(-12deg)} 36%,55%{opacity:1;transform:translateY(-12px) scale(1) rotate(4deg)} 68%,100%{opacity:0;transform:translateY(-5px) scale(.55) rotate(20deg)} }
+      @keyframes part { 0%,52%{opacity:0;transform:translateY(20px) scale(.35) rotate(-8deg)} 70%,92%{opacity:1;transform:translateY(-8px) scale(1) rotate(0)} 100%{opacity:0;transform:translateY(-8px) scale(.96)} }
+      @keyframes scan { from{transform:translateY(-86px)} to{transform:translateY(92px)} }
+      @keyframes shadow { 0%,30%{opacity:.08;transform:scale(.75)} 48%,62%{opacity:.16;transform:scale(.9)} 78%,100%{opacity:.25;transform:scale(1)} }
+      @media (prefers-reduced-motion:reduce){#sheet,#plane,#part,#scan,#shadow{animation:none}#sheet{opacity:0}#plane{opacity:0}#part{opacity:1}}
     </style>
   </defs>
-  <ellipse id="shadow" cx="320" cy="398" rx="142" ry="28" fill="#48c9b0" opacity=".13" filter="url(#glow)"/>
-  <g id="orbit" fill="none" stroke="#48c9b0" stroke-width="4" opacity=".62">
-    <path d="M116 255c0-68 91-123 204-123s204 55 204 123-91 123-204 123-204-55-204-123Z"/>
-    <circle cx="116" cy="255" r="8" fill="#b4f6e8" stroke="none"/>
+  <ellipse id="shadow" cx="320" cy="407" rx="150" ry="28" fill="#48c9b0" opacity=".18" filter="url(#glow)"/>
+  <g id="sheet"><rect x="178" y="104" width="284" height="286" rx="14" fill="url(#paper)" stroke="#48c9b0" stroke-width="5"/>
+    <path d="M214 160h212M214 205h145M214 250h212M214 295h112M214 340h178" fill="none" stroke="#287f85" stroke-width="6" stroke-linecap="round" opacity=".72"/>
+    <path d="M246 178v144M392 177v146M242 250h154" fill="none" stroke="#0e5b62" stroke-width="3" stroke-dasharray="9 7" opacity=".55"/>
+    <path id="scan" d="M194 245h252" stroke="#eafffb" stroke-width="8" opacity=".9" filter="url(#glow)"/>
   </g>
-  <g id="cube">
-    <g stroke="#070c12" stroke-width="8" stroke-linejoin="round">
-      <path d="M320 76 500 174 320 272 140 174Z" fill="url(#top)"/>
-      <path d="M140 174 320 272 320 454 140 356Z" fill="url(#left)"/>
-      <path d="M320 272 500 174 500 356 320 454Z" fill="url(#right)"/>
-    </g>
-    <path d="M320 116 426 174 320 232 214 174Z" fill="#0b141d" opacity=".92"/>
-    <path d="M320 232v112l74-40v-72l-74 40-74-40v72l74 40" fill="none" stroke="#92efdc" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>
+  <g id="plane" opacity="0" fill="url(#paper)" stroke="#48c9b0" stroke-width="6" stroke-linejoin="round">
+    <path d="M118 273 518 130 365 383 306 294Z"/><path d="M118 273 306 294 365 383 278 316Z" fill="#75c8c3"/><path d="M306 294 518 130 345 315Z" fill="#d7ffff"/>
   </g>
-  <text id="word" x="320" y="505" text-anchor="middle" fill="#e5edf4" font-family="system-ui, sans-serif" font-size="58" font-weight="750" letter-spacing="10">3DE</text>
+  <g id="part" opacity="0" stroke="#070c12" stroke-width="8" stroke-linejoin="round">
+    <path d="M320 90 492 184 320 278 148 184Z" fill="url(#top)"/><path d="M148 184 320 278 320 438 148 344Z" fill="url(#left)"/><path d="M320 278 492 184 492 344 320 438Z" fill="url(#right)"/><path d="M320 130 414 182 320 234 226 182Z" fill="#0b141d" opacity=".9"/>
+  </g>
+  <text x="320" y="500" text-anchor="middle" fill="#e5edf4" font-family="system-ui,sans-serif" font-size="54" font-weight="750" letter-spacing="10">3DE</text>
 </svg>
